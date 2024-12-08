@@ -14,11 +14,19 @@ var Module = fx.Module(
 		return log.Named("http")
 	}),
 	fx.Provide(New),
-	fx.Invoke(func(lc fx.Lifecycle, app *fiber.App, logger *zap.Logger) {
+	fx.Provide(
+		fx.Annotate(
+			func(app *fiber.App) fiber.Router {
+				return app.Group("/api")
+			},
+			fx.ResultTags(`name:"http:api"`),
+		),
+	),
+	fx.Invoke(func(lc fx.Lifecycle, cfg Config, app *fiber.App, logger *zap.Logger) {
 		lc.Append(fx.Hook{
 			OnStart: func(ctx context.Context) error {
 				go func() {
-					_ = app.Listen(":3000")
+					_ = app.Listen(cfg.Address)
 				}()
 				logger.Info("server started")
 

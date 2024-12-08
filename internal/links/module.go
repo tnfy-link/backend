@@ -1,4 +1,4 @@
-package api
+package links
 
 import (
 	"go.uber.org/fx"
@@ -6,9 +6,9 @@ import (
 )
 
 var Module = fx.Module(
-	"api",
+	"links",
 	fx.Decorate(func(log *zap.Logger) *zap.Logger {
 		return log.Named("api")
 	}),
-	fx.Provide(New),
+	fx.Invoke(Register),
 )
