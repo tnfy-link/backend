@@ -15,7 +15,8 @@ type StorageConfig struct {
 }
 
 type LinksConfig struct {
-	TTL time.Duration `envconfig:"LINKS__TTL"`
+	Hostname string        `envconfig:"LINKS__HOSTNAME"`
+	TTL      time.Duration `envconfig:"LINKS__TTL"`
 }
 
 type Config struct {
@@ -30,7 +31,8 @@ var instance = Config{
 		URL: "redis://localhost:6379/0",
 	},
 	Links: LinksConfig{
-		TTL: time.Hour * 24 * 7,
+		Hostname: "http://localhost:3000",
+		TTL:      time.Hour * 24 * 7,
 	},
 }
 

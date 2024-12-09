@@ -102,10 +102,10 @@ func (r *repository) nextID(_ context.Context) (string, error) {
 	return string(id), nil
 }
 
-func newRepository(redis *redis.Client) *repository {
+func newRepository(redis *redis.Client, config Config) *repository {
 	return &repository{
 		redis: redis,
 
-		ttl: 7 * 24 * time.Hour,
+		ttl: config.TTL,
 	}
 }

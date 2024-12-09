@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/tnfy-link/server/internal/core/http"
 	"github.com/tnfy-link/server/internal/core/redis"
+	"github.com/tnfy-link/server/internal/links"
 	"go.uber.org/fx"
 )
 
@@ -17,6 +18,12 @@ var Module = fx.Module(
 	fx.Provide(func(c Config) redis.Config {
 		return redis.Config{
 			URL: c.Storage.URL,
+		}
+	}),
+	fx.Provide(func(c Config) links.Config {
+		return links.Config{
+			Hostname: c.Links.Hostname,
+			TTL:      c.Links.TTL,
 		}
 	}),
 )
