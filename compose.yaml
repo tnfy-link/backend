@@ -1,6 +1,6 @@
 services:
   server:
-    image: "tnfy-link/server:latest"
+    image: "ghcr.io/tnfy-link/backend:latest"
     build:
       context: .
       target: final
