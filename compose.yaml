@@ -1,0 +1,29 @@
+services:
+  server:
+    image: "tnfy-link/server:latest"
+    build:
+      context: .
+      target: final
+    environment:
+      - HTTP__ADDRESS=:3000
+      - STORAGE__URL=redis://redis:6379/0
+      - LINKS__HOSTNAME=http://localhost:3000
+      - LINKS__TTL=168h
+    ports:
+      - 3000:3000
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  redis-data:
