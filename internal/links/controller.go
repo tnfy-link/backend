@@ -63,7 +63,7 @@ func Register(app *fiber.App, redis *redis.Client, config Config, log *zap.Logge
 
 	app.Get("/:id", controller.redirect)
 
-	api := app.Group("/api", jsonify.New())
+	api := app.Group("/api/v1", jsonify.New())
 	api.Post(
 		"/links",
 		NewLimiter(),
