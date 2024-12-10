@@ -7,13 +7,14 @@ import (
 	"go.uber.org/zap"
 )
 
-func New(config Config, logger *zap.Logger) (*fiber.App, error) {
+func New(config Config, views fiber.Views, logger *zap.Logger) (*fiber.App, error) {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage:   true,
 		EnableTrustedProxyCheck: true,
 		TrustedProxies:          config.Proxies,
 		ProxyHeader:             config.ProxyHeader,
 		EnableIPValidation:      true,
+		Views:                   views,
 	})
 	app.Use(fiberzap.New(fiberzap.Config{
 		SkipBody: func(c *fiber.Ctx) bool {

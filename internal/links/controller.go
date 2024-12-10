@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/redis/go-redis/v9"
 	"github.com/tnfy-link/server/internal/core/http/jsonify"
 	"go.uber.org/zap"
 )
@@ -48,6 +47,21 @@ func (c *controller) post(ctx *fiber.Ctx) error {
 	)
 }
 
+func (c *controller) Register(app *fiber.App) {
+	app.Get("/:id", c.redirect)
+
+	api := app.Group("/api/v1", jsonify.New())
+	api.Post(
+		"/links",
+		NewLimiter(),
+		c.post,
+	)
+
+	app.Use(func(ctx *fiber.Ctx) error {
+		return ctx.Redirect("/", fiber.StatusTemporaryRedirect)
+	})
+}
+
 func newController(r *repository, l *zap.Logger, c Config) *controller {
 	return &controller{
 		r: r,
@@ -55,20 +69,4 @@ func newController(r *repository, l *zap.Logger, c Config) *controller {
 
 		hostname: c.Hostname,
 	}
-}
-
-func Register(app *fiber.App, redis *redis.Client, config Config, log *zap.Logger) error {
-	repository := newRepository(redis, config)
-	controller := newController(repository, log, config)
-
-	app.Get("/:id", controller.redirect)
-
-	api := app.Group("/api/v1", jsonify.New())
-	api.Post(
-		"/links",
-		NewLimiter(),
-		controller.post,
-	)
-
-	return nil
 }
