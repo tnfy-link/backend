@@ -6,6 +6,8 @@ services:
       target: final
     environment:
       - HTTP__ADDRESS=:3000
+      - HTTP__PROXY_HEADER=X-Forwarded-For
+      - HTTP__PROXIES=127.0.0.1
       - STORAGE__URL=redis://redis:6379/0
       - LINKS__HOSTNAME=http://localhost:3000
       - LINKS__TTL=168h

@@ -1,5 +1,7 @@
 package http
 
 type Config struct {
-	Address string
+	Address     string
+	ProxyHeader string
+	Proxies     []string
 }

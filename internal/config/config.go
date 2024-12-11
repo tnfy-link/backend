@@ -7,7 +7,9 @@ import (
 )
 
 type HttpConfig struct {
-	Address string `envconfig:"HTTP__ADDRESS"`
+	Address     string   `envconfig:"HTTP__ADDRESS"`
+	ProxyHeader string   `envconfig:"HTTP__PROXY_HEADER"`
+	Proxies     []string `envconfig:"HTTP__PROXIES"`
 }
 
 type StorageConfig struct {
