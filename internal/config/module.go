@@ -12,7 +12,9 @@ var Module = fx.Module(
 	fx.Provide(New),
 	fx.Provide(func(c Config) http.Config {
 		return http.Config{
-			Address: c.Http.Address,
+			Address:     c.Http.Address,
+			ProxyHeader: c.Http.ProxyHeader,
+			Proxies:     c.Http.Proxies,
 		}
 	}),
 	fx.Provide(func(c Config) redis.Config {
