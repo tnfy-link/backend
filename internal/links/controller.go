@@ -3,13 +3,17 @@ package links
 import (
 	"fmt"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/tnfy-link/server/internal/core/http/jsonify"
+	validate "github.com/tnfy-link/server/internal/core/validator"
 	"go.uber.org/zap"
 )
 
 type controller struct {
 	r *repository
+
+	v *validator.Validate
 	l *zap.Logger
 
 	hostname string
@@ -28,8 +32,8 @@ func (c *controller) redirect(ctx *fiber.Ctx) error {
 
 func (c *controller) post(ctx *fiber.Ctx) error {
 	req := PostLinksRequest{}
-	if err := ctx.BodyParser(&req); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("failed to parse request: %s", err.Error()))
+	if err := c.bodyParserValidator(ctx, &req); err != nil {
+		return err
 	}
 
 	link, err := c.r.Create(ctx.Context(), req.Link)
@@ -47,6 +51,24 @@ func (c *controller) post(ctx *fiber.Ctx) error {
 	)
 }
 
+func (c *controller) bodyParserValidator(ctx *fiber.Ctx, out interface{}) error {
+	if err := ctx.BodyParser(out); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("failed to parse request: %s", err.Error()))
+	}
+
+	if err := c.v.Struct(out); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("failed to validate request: %s", err.Error()))
+	}
+
+	if v, ok := out.(validate.Validatable); ok {
+		if err := v.Validate(); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("failed to validate request: %s", err.Error()))
+		}
+	}
+
+	return nil
+}
+
 func (c *controller) Register(app *fiber.App) {
 	app.Get("/:id", c.redirect)
 
@@ -62,9 +84,11 @@ func (c *controller) Register(app *fiber.App) {
 	})
 }
 
-func newController(r *repository, l *zap.Logger, c Config) *controller {
+func newController(r *repository, v *validator.Validate, l *zap.Logger, c Config) *controller {
 	return &controller{
 		r: r,
+
+		v: v,
 		l: l,
 
 		hostname: c.Hostname,

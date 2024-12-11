@@ -1,9 +1,13 @@
 package links
 
-import "time"
+import (
+	"errors"
+	"strings"
+	"time"
+)
 
 type CreateLink struct {
-	TargetURL string `json:"targetUrl" format:"uri"`
+	TargetURL string `json:"targetUrl" validate:"required,http_url"`
 }
 
 type Link struct {
@@ -16,6 +20,14 @@ type Link struct {
 
 type PostLinksRequest struct {
 	Link CreateLink `json:"link"`
+}
+
+func (r *PostLinksRequest) Validate() error {
+	if !strings.HasPrefix(r.Link.TargetURL, "https://") {
+		return errors.New("targetUrl must start with https://")
+	}
+
+	return nil
 }
 
 type PostLinksResponse struct {

@@ -10,10 +10,11 @@ import (
 func New(config Config, views fiber.Views, logger *zap.Logger) (*fiber.App, error) {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage:   true,
-		EnableTrustedProxyCheck: true,
-		TrustedProxies:          config.Proxies,
-		ProxyHeader:             config.ProxyHeader,
 		EnableIPValidation:      true,
+		EnableTrustedProxyCheck: true,
+		ErrorHandler:            ErrorHandler,
+		ProxyHeader:             config.ProxyHeader,
+		TrustedProxies:          config.Proxies,
 		Views:                   views,
 	})
 	app.Use(fiberzap.New(fiberzap.Config{
@@ -26,4 +27,16 @@ func New(config Config, views fiber.Views, logger *zap.Logger) (*fiber.App, erro
 	app.Use(recover.New())
 
 	return app, nil
+}
+
+func ErrorHandler(c *fiber.Ctx, err error) error {
+	code := fiber.StatusInternalServerError
+
+	// Retrieve the custom status code if it's an fiber.*Error
+	if e, ok := err.(*fiber.Error); ok {
+		code = e.Code
+	}
+
+	// Send json error
+	return c.Status(code).JSON(ErrorResponse{Error: Error{Message: err.Error()}})
 }

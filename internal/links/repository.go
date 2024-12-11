@@ -38,7 +38,7 @@ func (r *repository) Get(ctx context.Context, id string) (Link, error) {
 		return Link{}, fmt.Errorf("failed to get link: %w", err)
 	}
 
-	createdAt, err := time.Parse(time.RFC3339, fields["createdAt"])
+	createdAt, err := time.Parse(time.RFC3339, fields[fieldCreatedAt])
 	if err != nil {
 		return Link{}, fmt.Errorf("failed to parse createdAt: %w", err)
 	}

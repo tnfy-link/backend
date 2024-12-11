@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/tnfy-link/server/internal/core/http/jsonify"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -17,7 +18,7 @@ var Module = fx.Module(
 	fx.Provide(
 		fx.Annotate(
 			func(app *fiber.App) fiber.Router {
-				return app.Group("/api")
+				return app.Group("/api").Use(jsonify.New())
 			},
 			fx.ResultTags(`name:"http:api"`),
 		),

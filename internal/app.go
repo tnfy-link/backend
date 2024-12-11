@@ -5,6 +5,7 @@ import (
 	"github.com/tnfy-link/server/internal/core/http"
 	"github.com/tnfy-link/server/internal/core/logger"
 	"github.com/tnfy-link/server/internal/core/redis"
+	"github.com/tnfy-link/server/internal/core/validator"
 	"github.com/tnfy-link/server/internal/links"
 	"github.com/tnfy-link/server/internal/ui"
 	"go.uber.org/fx"
@@ -23,6 +24,7 @@ func Run() {
 		}),
 		http.Module,
 		redis.Module,
+		validator.Module,
 
 		config.Module,
 		ui.Module,
