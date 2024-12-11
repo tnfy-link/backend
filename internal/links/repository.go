@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	keyTemplateMeta   = "links:%s:meta"
-	keyTemplateTarget = "links:%s:target"
-	keyTemplateStats  = "links:%s:stats"
+	keyIndex         = "links:index"
+	keyTemplateMeta  = "links:%s:meta"
+	keyTemplateStats = "links:%s:stats"
 
 	fieldTargetUrl = "targetUrl"
 	fieldCreatedAt = "createdAt"
@@ -53,7 +53,7 @@ func (r *repository) Get(ctx context.Context, id string) (Link, error) {
 }
 
 func (r *repository) GetTarget(ctx context.Context, id string) (string, error) {
-	return r.redis.Get(ctx, fmt.Sprintf(keyTemplateTarget, id)).Result()
+	return r.redis.HGet(ctx, fmt.Sprintf(keyTemplateMeta, id), fieldTargetUrl).Result()
 }
 
 func (r *repository) Create(ctx context.Context, target CreateLink) (Link, error) {
@@ -68,21 +68,22 @@ func (r *repository) Create(ctx context.Context, target CreateLink) (Link, error
 		CreatedAt: time.Now(),
 	}
 
-	keyTarget := fmt.Sprintf(keyTemplateTarget, link.ID)
-
-	done, err := r.redis.SetNX(ctx, keyTarget, link.TargetURL, r.ttl).Result()
-	if !done || err != nil {
+	canCreate, err := r.redis.HSetNX(ctx, keyIndex, id, target.TargetURL).Result()
+	if err != nil {
 		return link, fmt.Errorf("failed to set link: %w", err)
+	}
+	if !canCreate {
+		return link, fmt.Errorf("failed to set link: %w", ErrLinkAlreadyExists)
 	}
 
 	keyMeta := fmt.Sprintf(keyTemplateMeta, link.ID)
-
 	pipe := r.redis.Pipeline()
 	pipe.HSet(ctx, keyMeta, map[string]string{
 		fieldTargetUrl: link.TargetURL,
 		fieldCreatedAt: link.CreatedAt.Format(time.RFC3339),
 	})
 	pipe.Expire(ctx, keyMeta, r.ttl)
+	pipe.HExpire(ctx, keyIndex, r.ttl, id)
 	if _, err := pipe.Exec(ctx); err != nil {
 		return link, fmt.Errorf("failed to set link: %w", err)
 	}
