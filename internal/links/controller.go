@@ -11,7 +11,7 @@ import (
 )
 
 type controller struct {
-	r *repository
+	s *service
 
 	v *validator.Validate
 	l *zap.Logger
@@ -21,7 +21,7 @@ type controller struct {
 
 func (c *controller) redirect(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
-	target, err := c.r.GetTarget(ctx.Context(), id)
+	target, err := c.s.GetTarget(ctx.Context(), id)
 	if err != nil {
 		c.l.Error("failed to get target", zap.Error(err), zap.String("id", id))
 		return ctx.Redirect("/", fiber.StatusTemporaryRedirect)
@@ -36,7 +36,7 @@ func (c *controller) post(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	link, err := c.r.Create(ctx.Context(), req.Link)
+	link, err := c.s.Create(ctx.Context(), req.Link)
 	if err != nil {
 		c.l.Error("failed to create link", zap.Error(err), zap.String("link", req.Link.TargetURL))
 		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to create link: %s", err.Error()))
@@ -84,9 +84,9 @@ func (c *controller) Register(app *fiber.App) {
 	})
 }
 
-func newController(r *repository, v *validator.Validate, l *zap.Logger, c Config) *controller {
+func newController(s *service, v *validator.Validate, l *zap.Logger, c Config) *controller {
 	return &controller{
-		r: r,
+		s: s,
 
 		v: v,
 		l: l,
