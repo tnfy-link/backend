@@ -15,7 +15,8 @@ type Link struct {
 	TargetURL string `json:"targetUrl"`
 	URL       string `json:"url"`
 
-	CreatedAt time.Time `json:"createdAt"`
+	CreatedAt  time.Time `json:"createdAt"`
+	ValidUntil time.Time `json:"validUntil"`
 }
 
 type PostLinksRequest struct {
