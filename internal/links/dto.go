@@ -34,3 +34,13 @@ func (r *PostLinksRequest) Validate() error {
 type PostLinksResponse struct {
 	Link Link `json:"link"`
 }
+
+// Stats
+type Stats struct {
+	Labels map[string]map[string]int `json:"labels"`
+	Total  int                       `json:"total"`
+}
+
+type GetStatsResponse struct {
+	Stats Stats `json:"stats"`
+}

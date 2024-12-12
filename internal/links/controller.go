@@ -1,7 +1,9 @@
 package links
 
 import (
+	"context"
 	"fmt"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -24,8 +26,14 @@ func (c *controller) redirect(ctx *fiber.Ctx) error {
 	target, err := c.s.GetTarget(ctx.Context(), id)
 	if err != nil {
 		c.l.Error("failed to get target", zap.Error(err), zap.String("id", id))
-		return ctx.Redirect("/", fiber.StatusTemporaryRedirect)
+		return ctx.SendStatus(fiber.StatusNotFound)
 	}
+
+	go func(id, query string) {
+		if err := c.s.RegisterStats(context.Background(), id, query); err != nil {
+			c.l.Error("failed to register stats", zap.Error(err), zap.String("id", id), zap.String("query", query))
+		}
+	}(strings.Clone(id), strings.Clone(ctx.Context().QueryArgs().String()))
 
 	return ctx.Redirect(target, fiber.StatusTemporaryRedirect)
 }
@@ -47,6 +55,21 @@ func (c *controller) post(ctx *fiber.Ctx) error {
 	return ctx.JSON(
 		PostLinksResponse{
 			Link: link,
+		},
+	)
+}
+
+func (c *controller) stats(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	stats, err := c.s.GetStats(ctx.Context(), id)
+	if err != nil {
+		c.l.Error("failed to get stats", zap.Error(err), zap.String("id", id))
+		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to get stats: %s", err.Error()))
+	}
+
+	return ctx.JSON(
+		GetStatsResponse{
+			Stats: stats,
 		},
 	)
 }
@@ -78,6 +101,7 @@ func (c *controller) Register(app *fiber.App) {
 		NewLimiter(),
 		c.post,
 	)
+	api.Get("/links/:id/stats", c.stats)
 
 	app.Use(func(ctx *fiber.Ctx) error {
 		return ctx.Redirect("/", fiber.StatusTemporaryRedirect)

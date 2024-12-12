@@ -21,6 +21,7 @@
   - [📝 API Documentation](#-api-documentation)
     - [Shorten URL](#shorten-url)
     - [Redirect](#redirect)
+    - [Get Statistics](#get-statistics)
   - [🔧 Development](#-development)
   - [🤝 Contributing](#-contributing)
   - [📄 License](#-license)
@@ -31,6 +32,7 @@ A high-performance URL shortener service built with Go, using modern technologie
 ## 🚀 Features
 
 - **High Performance**: Built with Go and Fiber framework for maximum speed
+- **Statistics**: UTM labels support for analytics
 - **Redis Storage**: Fast and reliable link storage with configurable TTL
 - **Base58 Encoding**: Human-friendly short URLs using Base58 encoding
 - **Docker Support**: Easy deployment with Docker and Docker Compose
@@ -151,7 +153,8 @@ Response:
     "id": "3uqH4m",
     "targetUrl": "https://docs.sms-gate.app",
     "url": "https://tnfy.link/3uqH4m",
-    "createdAt": "2024-12-09T12:53:12.76979501Z"
+    "createdAt": "2024-12-09T12:53:12.76979501Z",
+    "validUntil": "2024-12-16T12:53:12.76979501Z"
   }
 }
 ```
@@ -161,6 +164,31 @@ Response:
 GET /{id}
 ```
 Redirects to the original URL if found.
+
+### Get Statistics
+```http
+GET /api/v1/links/{id}/stats
+```
+
+Response:
+```json
+{
+  "stats": {
+    "labels": {
+      "source": {
+        "google": 1
+      },
+      "medium": {
+        "cpc": 1
+      },
+      "campaign": {
+        "new_year": 1
+      }
+    },
+    "total": 1
+  }
+}
+```
 
 ## 🔧 Development
 
