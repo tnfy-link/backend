@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	maxLabelValueLength = 64
+	maxUTMLabelValueLength = 64
+	maxTargetURLLength     = 2048
 )
 
 var utmLabels = map[string]string{
@@ -23,6 +24,8 @@ var utmLabels = map[string]string{
 }
 
 type service struct {
+	encoder *base58.Encoding
+
 	links  *repository
 	logger *zap.Logger
 
@@ -30,6 +33,21 @@ type service struct {
 }
 
 func (s *service) Create(ctx context.Context, target CreateLink) (Link, error) {
+	if target.TargetURL == "" {
+		return Link{}, newValidationError("targetUrl", fmt.Errorf("value is empty"))
+	}
+	if len(target.TargetURL) > maxTargetURLLength {
+		return Link{}, newValidationError("targetUrl", fmt.Errorf("value too long"))
+	}
+
+	parsedUrl, err := url.Parse(target.TargetURL)
+	if err != nil {
+		return Link{}, newValidationError("targetUrl", fmt.Errorf("invalid url: %w", err))
+	}
+	if parsedUrl.Scheme != "https" {
+		return Link{}, newValidationError("targetUrl", fmt.Errorf("scheme must be https"))
+	}
+
 	id, err := s.newID()
 	if err != nil {
 		return Link{}, fmt.Errorf("failed to generate id: %w", err)
@@ -46,22 +64,32 @@ func (s *service) Create(ctx context.Context, target CreateLink) (Link, error) {
 }
 
 func (s *service) GetTarget(ctx context.Context, id string) (string, error) {
+	if _, err := s.encoder.DecodeUint64([]byte(id)); err != nil {
+		return "", ErrInvalidID
+	}
+
 	return s.links.GetTarget(ctx, id)
 }
 
 func (s *service) RegisterStats(ctx context.Context, id string, query string) error {
 	values, err := url.ParseQuery(query)
 	if err != nil {
-		s.logger.Error("failed to parse query", zap.Error(err))
+		// not a fatal error, just log
+		s.logger.Warn("failed to parse query", zap.Error(err))
 	}
 
 	labels := Labels{}
 
 	for k, v := range utmLabels {
-		if val := values.Get(k); v != "" {
-			if len(val) > maxLabelValueLength {
+		if val := values.Get(k); val != "" {
+			if err := validateUTMValue(val); err != nil {
+				s.logger.Warn("invalid utm value", zap.String("id", id), zap.String("label", v), zap.String("value", val), zap.Error(err))
+				continue
+			}
+
+			if len(val) > maxUTMLabelValueLength {
 				s.logger.Warn("label value too long", zap.String("id", id), zap.String("label", v), zap.String("value", val))
-				val = val[:maxLabelValueLength]
+				val = val[:maxUTMLabelValueLength]
 			}
 			labels[v] = val
 		}
@@ -81,13 +109,22 @@ func (s *service) newID() (string, error) {
 		return "", fmt.Errorf("failed to read random value: %w", err)
 	}
 
-	id := base58.FlickrEncoding.EncodeUint64(uint64(randomValue))
+	id := s.encoder.EncodeUint64(uint64(randomValue))
 
 	return string(id), nil
 }
 
 func newService(links *repository, logger *zap.Logger, config Config) *service {
+	if links == nil {
+		panic("links repository is required")
+	}
+	if logger == nil {
+		panic("logger is required")
+	}
+
 	return &service{
+		encoder: base58.FlickrEncoding,
+
 		links:  links,
 		logger: logger,
 

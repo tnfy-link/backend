@@ -29,7 +29,13 @@ type repository struct {
 }
 
 func (r *repository) GetTarget(ctx context.Context, id string) (string, error) {
-	return r.redis.HGet(ctx, fmt.Sprintf(keyTemplateMeta, id), fieldTargetUrl).Result()
+	value, err := r.redis.HGet(ctx, fmt.Sprintf(keyTemplateMeta, id), fieldTargetUrl).Result()
+	if err == redis.Nil {
+		return "", ErrLinkNotFound
+	} else if err != nil {
+		return "", fmt.Errorf("failed to get target: %w", err)
+	}
+	return value, nil
 }
 
 func (r *repository) Create(ctx context.Context, link Link) error {
@@ -65,6 +71,13 @@ func (r *repository) Create(ctx context.Context, link Link) error {
 
 func (r *repository) RegisterStats(ctx context.Context, id string, labels Labels) error {
 	keyStats := fmt.Sprintf(keyTemplateStats, id)
+	exists, err := r.redis.Exists(ctx, keyStats).Result()
+	if err != nil {
+		return fmt.Errorf("failed to register stats: %w", err)
+	}
+	if exists == 0 {
+		return fmt.Errorf("stats not found")
+	}
 
 	pipe := r.redis.TxPipeline()
 	pipe.HIncrBy(ctx, keyStats, fieldStatsTotal, 1)
