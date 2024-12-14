@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/tnfy-link/backend/internal/core/http/jsonify"
 	validate "github.com/tnfy-link/backend/internal/core/validator"
 	"go.uber.org/zap"
@@ -105,16 +106,24 @@ func (c *controller) bodyParserValidator(ctx *fiber.Ctx, out interface{}) error 
 }
 
 func (c *controller) Register(app *fiber.App) {
-	app.Get("/:id", c.redirect)
-
-	api := app.Group("/api/v1", jsonify.New())
+	api := app.Group(
+		"/api/v1",
+		cors.New(cors.Config{
+			AllowOrigins: c.hostname,
+		}),
+		jsonify.New(),
+	)
 	api.Post(
 		"/links",
 		NewLimiter(),
 		c.post,
 	)
 	api.Get("/links/:id/stats", c.stats)
+	api.Use(func(ctx *fiber.Ctx) error {
+		return ctx.SendStatus(fiber.StatusNotFound)
+	})
 
+	app.Get("/:id", c.redirect)
 	app.Use(func(ctx *fiber.Ctx) error {
 		return ctx.Redirect("/", fiber.StatusTemporaryRedirect)
 	})
