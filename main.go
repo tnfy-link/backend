@@ -1,6 +1,6 @@
 package main
 
-import "github.com/tnfy-link/server/internal"
+import "github.com/tnfy-link/backend/internal"
 
 func main() {
 	internal.Run()

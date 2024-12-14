@@ -90,7 +90,7 @@ The service will be available at `http://localhost:3000`
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/tnfy-link/server.git
+    git clone https://github.com/tnfy-link/backend.git
     cd server
     ```
 

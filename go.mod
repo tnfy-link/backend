@@ -1,4 +1,4 @@
-module github.com/tnfy-link/server
+module github.com/tnfy-link/backend
 
 go 1.23.2
 

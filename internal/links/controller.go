@@ -8,8 +8,8 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/tnfy-link/server/internal/core/http/jsonify"
-	validate "github.com/tnfy-link/server/internal/core/validator"
+	"github.com/tnfy-link/backend/internal/core/http/jsonify"
+	validate "github.com/tnfy-link/backend/internal/core/validator"
 	"go.uber.org/zap"
 )
 
