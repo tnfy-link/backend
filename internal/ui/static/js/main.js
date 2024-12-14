@@ -22,7 +22,7 @@ $(document).ready(function () {
 
         // Make API request
         $.ajax({
-            url: '/api/v1/links',
+            url: 'https://api.tnfy.link/v1/links',
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ link: { targetUrl } }),
