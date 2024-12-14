@@ -1,9 +1,9 @@
 package config
 
 import (
-	"github.com/tnfy-link/server/internal/core/http"
-	"github.com/tnfy-link/server/internal/core/redis"
-	"github.com/tnfy-link/server/internal/links"
+	"github.com/tnfy-link/backend/internal/core/http"
+	"github.com/tnfy-link/backend/internal/core/redis"
+	"github.com/tnfy-link/backend/internal/links"
 	"go.uber.org/fx"
 )
 

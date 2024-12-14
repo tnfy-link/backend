@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/tnfy-link/server/internal/core/http/jsonify"
+	"github.com/tnfy-link/backend/internal/core/http/jsonify"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
