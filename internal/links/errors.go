@@ -1,11 +1,12 @@
 package links
 
-import "errors"
+import (
+	"errors"
+)
 
 var (
 	ErrLinkNotFound      = errors.New("link not found")
 	ErrLinkAlreadyExists = errors.New("link already exists")
-	ErrInvalidID         = errors.New("invalid id")
 )
 
 type ValidationError struct {

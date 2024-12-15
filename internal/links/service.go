@@ -2,13 +2,11 @@ package links
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/binary"
 	"fmt"
 	"net/url"
 	"time"
 
-	"github.com/itchyny/base58-go"
+	"github.com/tnfy-link/backend/internal/id"
 	"go.uber.org/zap"
 )
 
@@ -24,7 +22,7 @@ var utmLabels = map[string]string{
 }
 
 type service struct {
-	encoder *base58.Encoding
+	idgen *id.Generator
 
 	links  *repository
 	logger *zap.Logger
@@ -48,7 +46,7 @@ func (s *service) Create(ctx context.Context, target CreateLink) (Link, error) {
 		return Link{}, newValidationError("targetUrl", fmt.Errorf("scheme must be https"))
 	}
 
-	id, err := s.newID()
+	id, err := s.idgen.New()
 	if err != nil {
 		return Link{}, fmt.Errorf("failed to generate id: %w", err)
 	}
@@ -64,16 +62,16 @@ func (s *service) Create(ctx context.Context, target CreateLink) (Link, error) {
 }
 
 func (s *service) Get(ctx context.Context, id string) (Link, error) {
-	if _, err := s.encoder.DecodeUint64([]byte(id)); err != nil {
-		return Link{}, ErrInvalidID
+	if err := s.idgen.Validate(id); err != nil {
+		return Link{}, newValidationError("id", err)
 	}
 
 	return s.links.Get(ctx, id)
 }
 
 func (s *service) GetTarget(ctx context.Context, id string) (string, error) {
-	if _, err := s.encoder.DecodeUint64([]byte(id)); err != nil {
-		return "", ErrInvalidID
+	if err := s.idgen.Validate(id); err != nil {
+		return "", newValidationError("id", err)
 	}
 
 	return s.links.GetTarget(ctx, id)
@@ -107,22 +105,26 @@ func (s *service) RegisterStats(ctx context.Context, id string, query string) er
 }
 
 func (s *service) GetStats(ctx context.Context, id string) (Stats, error) {
+	if err := s.idgen.Validate(id); err != nil {
+		return Stats{}, newValidationError("id", err)
+	}
+
 	return s.links.GetStats(ctx, id)
 }
 
-func (s *service) newID() (string, error) {
-	var randomValue uint32
-	err := binary.Read(rand.Reader, binary.BigEndian, &randomValue)
-	if err != nil {
-		return "", fmt.Errorf("failed to read random value: %w", err)
-	}
-
-	id := s.encoder.EncodeUint64(uint64(randomValue))
-
-	return string(id), nil
+func (s *service) ValidateID(id string) error {
+	return s.idgen.Validate(id)
 }
 
-func newService(links *repository, logger *zap.Logger, config Config) *service {
+func newService(
+	idgen *id.Generator,
+	links *repository,
+	logger *zap.Logger,
+	config Config,
+) *service {
+	if idgen == nil {
+		panic("id generator is required")
+	}
 	if links == nil {
 		panic("links repository is required")
 	}
@@ -131,7 +133,7 @@ func newService(links *repository, logger *zap.Logger, config Config) *service {
 	}
 
 	return &service{
-		encoder: base58.FlickrEncoding,
+		idgen: idgen,
 
 		links:  links,
 		logger: logger,

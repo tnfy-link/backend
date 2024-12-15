@@ -14,3 +14,14 @@ func NewLimiter() fiber.Handler {
 		Expiration:         time.Second,
 	})
 }
+
+func NewIDValidator(validator func(string) error) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		id := c.Params("id")
+		if err := validator(id); err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		}
+
+		return c.Next()
+	}
+}

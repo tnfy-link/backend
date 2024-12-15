@@ -6,6 +6,7 @@ import (
 	"github.com/tnfy-link/backend/internal/core/logger"
 	"github.com/tnfy-link/backend/internal/core/redis"
 	"github.com/tnfy-link/backend/internal/core/validator"
+	"github.com/tnfy-link/backend/internal/id"
 	"github.com/tnfy-link/backend/internal/links"
 	"github.com/tnfy-link/backend/internal/ui"
 	"go.uber.org/fx"
@@ -28,6 +29,7 @@ func Run() {
 
 		config.Module,
 		ui.Module,
+		id.Module,
 		links.Module,
 	).
 		Run()

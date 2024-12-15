@@ -26,9 +26,6 @@ type controller struct {
 func (c *controller) redirect(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	target, err := c.s.GetTarget(ctx.Context(), id)
-	if err == ErrInvalidID {
-		return ctx.SendStatus(fiber.StatusBadRequest)
-	}
 	if err == ErrLinkNotFound {
 		return ctx.SendStatus(fiber.StatusNotFound)
 	}
@@ -51,9 +48,6 @@ func (c *controller) redirect(ctx *fiber.Ctx) error {
 func (c *controller) get(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	link, err := c.s.Get(ctx.Context(), id)
-	if err == ErrInvalidID {
-		return ctx.SendStatus(fiber.StatusBadRequest)
-	}
 	if err == ErrLinkNotFound {
 		return ctx.SendStatus(fiber.StatusNotFound)
 	}
@@ -129,6 +123,10 @@ func (c *controller) bodyParserValidator(ctx *fiber.Ctx, out interface{}) error 
 }
 
 func (c *controller) Register(app *fiber.App) {
+	idValidator := NewIDValidator(func(s string) error {
+		return c.s.ValidateID(s)
+	})
+
 	api := app.Group(
 		"/api/v1",
 		cors.New(cors.Config{
@@ -136,18 +134,18 @@ func (c *controller) Register(app *fiber.App) {
 		}),
 		jsonify.New(),
 	)
-	api.Get("/links/:id", c.get)
+	api.Get("/links/:id", idValidator, c.get)
 	api.Post(
 		"/links",
 		NewLimiter(),
 		c.post,
 	)
-	api.Get("/links/:id/stats", c.stats)
+	api.Get("/links/:id/stats", idValidator, c.stats)
 	api.Use(func(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(fiber.StatusNotFound)
 	})
 
-	app.Get("/:id", c.redirect)
+	app.Get("/:id", idValidator, c.redirect)
 	app.Use(func(ctx *fiber.Ctx) error {
 		return ctx.Redirect("/", fiber.StatusTemporaryRedirect)
 	})
