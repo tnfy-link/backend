@@ -63,6 +63,14 @@ func (s *service) Create(ctx context.Context, target CreateLink) (Link, error) {
 	return link, s.links.Create(ctx, link)
 }
 
+func (s *service) Get(ctx context.Context, id string) (Link, error) {
+	if _, err := s.encoder.DecodeUint64([]byte(id)); err != nil {
+		return Link{}, ErrInvalidID
+	}
+
+	return s.links.Get(ctx, id)
+}
+
 func (s *service) GetTarget(ctx context.Context, id string) (string, error) {
 	if _, err := s.encoder.DecodeUint64([]byte(id)); err != nil {
 		return "", ErrInvalidID

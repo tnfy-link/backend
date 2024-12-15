@@ -28,6 +28,18 @@ type repository struct {
 	redis *redis.Client
 }
 
+func (r *repository) Get(ctx context.Context, id string) (Link, error) {
+	keyMeta := fmt.Sprintf(keyTemplateMeta, id)
+
+	value, err := r.redis.HGetAll(ctx, keyMeta).Result()
+	if err == redis.Nil || len(value) == 0 {
+		return Link{}, ErrLinkNotFound
+	} else if err != nil {
+		return Link{}, fmt.Errorf("failed to get link: %w", err)
+	}
+	return newLink(id, value)
+}
+
 func (r *repository) GetTarget(ctx context.Context, id string) (string, error) {
 	value, err := r.redis.HGet(ctx, fmt.Sprintf(keyTemplateMeta, id), fieldTargetUrl).Result()
 	if err == redis.Nil {
@@ -95,6 +107,9 @@ func (r *repository) RegisterStats(ctx context.Context, id string, labels Labels
 
 func (r *repository) GetStats(ctx context.Context, id string) (Stats, error) {
 	fields, err := r.redis.HGetAll(ctx, fmt.Sprintf(keyTemplateStats, id)).Result()
+	if err == redis.Nil || len(fields) == 0 {
+		return Stats{}, ErrLinkNotFound
+	}
 	if err != nil {
 		return Stats{}, fmt.Errorf("failed to get stats: %w", err)
 	}

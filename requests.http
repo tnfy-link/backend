@@ -10,6 +10,9 @@ GET {{baseUrl}} HTTP/1.1
 GET {{baseUrl}}/{{linkId}}?utm_source=source_{{$randomInt 0 9}}&utm_medium=medium_{{$randomInt 0 9}}&utm_campaign=campaign_{{$randomInt 0 9}} HTTP/1.1
 
 ###
+GET {{apiUrl}}/links/{{linkId}}
+
+###
 POST {{apiUrl}}/links HTTP/1.1
 Content-Type: application/json
 Origin: http://localhost:3000

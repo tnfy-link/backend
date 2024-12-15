@@ -48,6 +48,29 @@ func (c *controller) redirect(ctx *fiber.Ctx) error {
 	return ctx.Redirect(target, fiber.StatusTemporaryRedirect)
 }
 
+func (c *controller) get(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	link, err := c.s.Get(ctx.Context(), id)
+	if err == ErrInvalidID {
+		return ctx.SendStatus(fiber.StatusBadRequest)
+	}
+	if err == ErrLinkNotFound {
+		return ctx.SendStatus(fiber.StatusNotFound)
+	}
+	if err != nil {
+		c.l.Error("failed to get link", zap.Error(err), zap.String("id", id))
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	link.URL = c.hostname + "/" + link.ID
+
+	return ctx.JSON(
+		GetLinksResponse{
+			Link: link,
+		},
+	)
+}
+
 func (c *controller) post(ctx *fiber.Ctx) error {
 	req := PostLinksRequest{}
 	if err := c.bodyParserValidator(ctx, &req); err != nil {
@@ -63,7 +86,7 @@ func (c *controller) post(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to create link: %s", err.Error()))
 	}
 
-	link.URL = fmt.Sprintf("%s/%s", c.hostname, link.ID)
+	link.URL = c.hostname + "/" + link.ID
 
 	return ctx.JSON(
 		PostLinksResponse{
@@ -113,6 +136,7 @@ func (c *controller) Register(app *fiber.App) {
 		}),
 		jsonify.New(),
 	)
+	api.Get("/links/:id", c.get)
 	api.Post(
 		"/links",
 		NewLimiter(),
