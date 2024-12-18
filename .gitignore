@@ -127,3 +127,5 @@ $RECYCLE.BIN/
 
 tmp/
 coverage.html
+
+go.work.sum

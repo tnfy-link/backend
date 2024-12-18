@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"github.com/tnfy-link/backend/internal/api"
 	"github.com/tnfy-link/backend/internal/config"
 	"github.com/tnfy-link/backend/internal/core/http"
 	"github.com/tnfy-link/backend/internal/core/logger"
@@ -28,6 +29,7 @@ func Run() {
 		validator.Module,
 
 		config.Module,
+		api.Module,
 		ui.Module,
 		id.Module,
 		links.Module,

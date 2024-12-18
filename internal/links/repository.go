@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/tnfy-link/client-go/api"
 )
 
 const (
@@ -28,14 +29,14 @@ type repository struct {
 	redis *redis.Client
 }
 
-func (r *repository) Get(ctx context.Context, id string) (Link, error) {
+func (r *repository) Get(ctx context.Context, id string) (api.Link, error) {
 	keyMeta := fmt.Sprintf(keyTemplateMeta, id)
 
 	value, err := r.redis.HGetAll(ctx, keyMeta).Result()
 	if err == redis.Nil || len(value) == 0 {
-		return Link{}, ErrLinkNotFound
+		return api.Link{}, ErrLinkNotFound
 	} else if err != nil {
-		return Link{}, fmt.Errorf("failed to get link: %w", err)
+		return api.Link{}, fmt.Errorf("failed to get link: %w", err)
 	}
 	return newLink(id, value)
 }
@@ -50,7 +51,7 @@ func (r *repository) GetTarget(ctx context.Context, id string) (string, error) {
 	return value, nil
 }
 
-func (r *repository) Create(ctx context.Context, link Link) error {
+func (r *repository) Create(ctx context.Context, link api.Link) error {
 	canCreate, err := r.redis.HSetNX(ctx, keyIndex, link.ID, link.TargetURL).Result()
 	if err != nil {
 		return fmt.Errorf("failed to set link: %w", err)
@@ -105,16 +106,16 @@ func (r *repository) RegisterStats(ctx context.Context, id string, labels Labels
 	return nil
 }
 
-func (r *repository) GetStats(ctx context.Context, id string) (Stats, error) {
+func (r *repository) GetStats(ctx context.Context, id string) (api.Stats, error) {
 	fields, err := r.redis.HGetAll(ctx, fmt.Sprintf(keyTemplateStats, id)).Result()
 	if err == redis.Nil || len(fields) == 0 {
-		return Stats{}, ErrLinkNotFound
+		return api.Stats{}, ErrLinkNotFound
 	}
 	if err != nil {
-		return Stats{}, fmt.Errorf("failed to get stats: %w", err)
+		return api.Stats{}, fmt.Errorf("failed to get stats: %w", err)
 	}
 
-	stats := Stats{
+	stats := api.Stats{
 		Labels: make(map[string]map[string]int),
 		Total:  0,
 	}

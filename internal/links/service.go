@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/tnfy-link/backend/internal/id"
+	"github.com/tnfy-link/client-go/api"
 	"go.uber.org/zap"
 )
 
@@ -21,38 +22,40 @@ var utmLabels = map[string]string{
 	"utm_campaign": "campaign",
 }
 
-type service struct {
+type Service struct {
 	idgen *id.Generator
 
 	links  *repository
 	logger *zap.Logger
 
-	ttl time.Duration
+	hostname string
+	ttl      time.Duration
 }
 
-func (s *service) Create(ctx context.Context, target CreateLink) (Link, error) {
+func (s *Service) Create(ctx context.Context, target api.CreateLink) (api.Link, error) {
 	if target.TargetURL == "" {
-		return Link{}, newValidationError("targetUrl", fmt.Errorf("value is empty"))
+		return api.Link{}, newValidationError("targetUrl", fmt.Errorf("value is empty"))
 	}
 	if len(target.TargetURL) > maxTargetURLLength {
-		return Link{}, newValidationError("targetUrl", fmt.Errorf("value too long"))
+		return api.Link{}, newValidationError("targetUrl", fmt.Errorf("value too long"))
 	}
 
 	parsedUrl, err := url.Parse(target.TargetURL)
 	if err != nil {
-		return Link{}, newValidationError("targetUrl", fmt.Errorf("invalid url: %w", err))
+		return api.Link{}, newValidationError("targetUrl", fmt.Errorf("invalid url: %w", err))
 	}
 	if parsedUrl.Scheme != "https" {
-		return Link{}, newValidationError("targetUrl", fmt.Errorf("scheme must be https"))
+		return api.Link{}, newValidationError("targetUrl", fmt.Errorf("scheme must be https"))
 	}
 
 	id, err := s.idgen.New()
 	if err != nil {
-		return Link{}, fmt.Errorf("failed to generate id: %w", err)
+		return api.Link{}, fmt.Errorf("failed to generate id: %w", err)
 	}
 
-	link := Link{
+	link := api.Link{
 		ID:         id,
+		URL:        s.hostname + "/" + id,
 		TargetURL:  target.TargetURL,
 		CreatedAt:  time.Now(),
 		ValidUntil: time.Now().Add(s.ttl),
@@ -61,15 +64,22 @@ func (s *service) Create(ctx context.Context, target CreateLink) (Link, error) {
 	return link, s.links.Create(ctx, link)
 }
 
-func (s *service) Get(ctx context.Context, id string) (Link, error) {
+func (s *Service) Get(ctx context.Context, id string) (api.Link, error) {
 	if err := s.idgen.Validate(id); err != nil {
-		return Link{}, newValidationError("id", err)
+		return api.Link{}, newValidationError("id", err)
 	}
 
-	return s.links.Get(ctx, id)
+	link, err := s.links.Get(ctx, id)
+	if err != nil {
+		return api.Link{}, err
+	}
+
+	link.URL = s.hostname + "/" + link.ID
+
+	return link, nil
 }
 
-func (s *service) GetTarget(ctx context.Context, id string) (string, error) {
+func (s *Service) GetTarget(ctx context.Context, id string) (string, error) {
 	if err := s.idgen.Validate(id); err != nil {
 		return "", newValidationError("id", err)
 	}
@@ -77,7 +87,7 @@ func (s *service) GetTarget(ctx context.Context, id string) (string, error) {
 	return s.links.GetTarget(ctx, id)
 }
 
-func (s *service) RegisterStats(ctx context.Context, id string, query string) error {
+func (s *Service) RegisterStats(ctx context.Context, id string, query string) error {
 	values, err := url.ParseQuery(query)
 	if err != nil {
 		// not a fatal error, just log
@@ -104,24 +114,24 @@ func (s *service) RegisterStats(ctx context.Context, id string, query string) er
 	return s.links.RegisterStats(ctx, id, labels)
 }
 
-func (s *service) GetStats(ctx context.Context, id string) (Stats, error) {
+func (s *Service) GetStats(ctx context.Context, id string) (api.Stats, error) {
 	if err := s.idgen.Validate(id); err != nil {
-		return Stats{}, newValidationError("id", err)
+		return api.Stats{}, newValidationError("id", err)
 	}
 
 	return s.links.GetStats(ctx, id)
 }
 
-func (s *service) ValidateID(id string) error {
+func (s *Service) ValidateID(id string) error {
 	return s.idgen.Validate(id)
 }
 
-func newService(
+func NewService(
 	idgen *id.Generator,
 	links *repository,
 	logger *zap.Logger,
 	config Config,
-) *service {
+) *Service {
 	if idgen == nil {
 		panic("id generator is required")
 	}
@@ -132,12 +142,13 @@ func newService(
 		panic("logger is required")
 	}
 
-	return &service{
+	return &Service{
 		idgen: idgen,
 
 		links:  links,
 		logger: logger,
 
-		ttl: config.TTL,
+		hostname: config.Hostname,
+		ttl:      config.TTL,
 	}
 }
