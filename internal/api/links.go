@@ -1,0 +1,81 @@
+package api
+
+import (
+	"fmt"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
+	"github.com/tnfy-link/backend/internal/api/limiter"
+	"github.com/tnfy-link/backend/internal/api/param"
+	"github.com/tnfy-link/backend/internal/core/handler"
+	"github.com/tnfy-link/backend/internal/links"
+	"github.com/tnfy-link/client-go/api"
+	"go.uber.org/zap"
+)
+
+type Links struct {
+	handler.Base
+
+	s *links.Service
+}
+
+func (c *Links) get(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	link, err := c.s.Get(ctx.Context(), id)
+	if err == links.ErrLinkNotFound {
+		return ctx.SendStatus(fiber.StatusNotFound)
+	}
+	if err != nil {
+		c.Logger.Error("failed to get link", zap.Error(err), zap.String("id", id))
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return ctx.JSON(
+		api.GetLinkResponse{
+			Link: link,
+		},
+	)
+}
+
+func (c *Links) post(ctx *fiber.Ctx) error {
+	req := api.PostLinksRequest{}
+	if err := c.BodyParserValidator(ctx, &req); err != nil {
+		return err
+	}
+
+	link, err := c.s.Create(ctx.Context(), req.Link)
+	if err := links.AsValidationError(err); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("failed to create link: %s", err.Error()))
+	}
+	if err != nil {
+		c.Logger.Error("failed to create link", zap.Error(err), zap.String("link", req.Link.TargetURL))
+		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to create link: %s", err.Error()))
+	}
+
+	return ctx.JSON(
+		api.PostLinksResponse{
+			Link: link,
+		},
+	)
+}
+
+func (c *Links) Register(router fiber.Router) {
+	idValidator := param.NewValidator("id", c.s.ValidateID)
+
+	router.Get("/:id", idValidator, c.get)
+	router.Post(
+		"/",
+		limiter.New(1),
+		c.post,
+	)
+}
+
+func NewLinks(s *links.Service, v *validator.Validate, l *zap.Logger) *Links {
+	return &Links{
+		Base: handler.Base{
+			Validator: v,
+			Logger:    l,
+		},
+		s: s,
+	}
+}
