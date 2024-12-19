@@ -5,6 +5,7 @@ import (
 	"github.com/tnfy-link/backend/internal/config"
 	"github.com/tnfy-link/backend/internal/id"
 	"github.com/tnfy-link/backend/internal/links"
+	"github.com/tnfy-link/backend/internal/stats"
 	"github.com/tnfy-link/core/http"
 	"github.com/tnfy-link/core/logger"
 	"github.com/tnfy-link/core/redis"
@@ -31,6 +32,7 @@ func Run() {
 		api.Module,
 		id.Module,
 		links.Module,
+		stats.Module,
 	).
 		Run()
 }
