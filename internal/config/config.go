@@ -3,7 +3,7 @@ package config
 import (
 	"time"
 
-	"github.com/tnfy-link/backend/internal/core/config"
+	"github.com/tnfy-link/core/config"
 )
 
 type HttpConfig struct {
@@ -28,7 +28,9 @@ type Config struct {
 }
 
 var instance = Config{
-	Http: HttpConfig{Address: "127.0.0.1:3000"},
+	Http: HttpConfig{
+		Address: "127.0.0.1:3000",
+	},
 	Storage: StorageConfig{
 		URL: "redis://localhost:6379/0",
 	},

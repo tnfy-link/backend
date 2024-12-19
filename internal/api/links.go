@@ -7,9 +7,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/tnfy-link/backend/internal/api/limiter"
 	"github.com/tnfy-link/backend/internal/api/param"
-	"github.com/tnfy-link/backend/internal/core/handler"
 	"github.com/tnfy-link/backend/internal/links"
 	"github.com/tnfy-link/client-go/api"
+	"github.com/tnfy-link/core/handler"
 	"go.uber.org/zap"
 )
 
@@ -59,6 +59,21 @@ func (c *Links) post(ctx *fiber.Ctx) error {
 	)
 }
 
+func (c *Links) stats(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	stats, err := c.s.GetStats(ctx.Context(), id)
+	if err != nil {
+		c.Logger.Error("failed to get stats", zap.Error(err), zap.String("id", id))
+		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to get stats: %s", err.Error()))
+	}
+
+	return ctx.JSON(
+		api.GetStatsResponse{
+			Stats: stats,
+		},
+	)
+}
+
 func (c *Links) Register(router fiber.Router) {
 	idValidator := param.NewValidator("id", c.s.ValidateID)
 
@@ -68,6 +83,7 @@ func (c *Links) Register(router fiber.Router) {
 		limiter.New(1),
 		c.post,
 	)
+	router.Get("/:id/stats", idValidator, c.stats)
 }
 
 func NewLinks(s *links.Service, v *validator.Validate, l *zap.Logger) *Links {

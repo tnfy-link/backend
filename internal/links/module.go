@@ -1,7 +1,6 @@
 package links
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -13,8 +12,4 @@ var Module = fx.Module(
 	}),
 	fx.Provide(newRepository, fx.Private),
 	fx.Provide(NewService),
-	fx.Provide(newController, fx.Private),
-	fx.Invoke(func(c *controller, app *fiber.App) {
-		c.Register(app)
-	}),
 )
