@@ -43,7 +43,7 @@ var instance = Config{
 		URL: "redis://localhost:6379/0",
 	},
 	Links: LinksConfig{
-		Hostname: "http://localhost:3000",
+		Hostname: "http://localhost:3001",
 		TTL:      time.Hour * 24 * 7,
 	},
 }

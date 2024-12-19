@@ -20,9 +20,8 @@
   - [⚙️ Configuration](#️-configuration)
   - [📝 API Documentation](#-api-documentation)
     - [Shorten URL](#shorten-url)
-    - [Redirect](#redirect)
+    - [Get Link By ID](#get-link-by-id)
     - [Get Statistics](#get-statistics)
-  - [🔧 Development](#-development)
   - [🤝 Contributing](#-contributing)
   - [📄 License](#-license)
 
@@ -125,15 +124,18 @@ The service will be available at `http://localhost:3000`
 
 Configuration is done through environment variables:
 
-| Variable          | Description                       | Default                    |
-| ----------------- | --------------------------------- | -------------------------- |
-| `HTTP__ADDRESS`   | HTTP server listen address        | `:3000`                    |
-| `STORAGE__URL`    | Redis connection URL              | `redis://localhost:6379/0` |
-| `LINKS__HOSTNAME` | Base hostname for generated links | `http://localhost:3000`    |
-| `LINKS__TTL`      | Time-to-live for shortened links  | `168h`                     |
+| Variable                  | Description                       | Default                    |
+| ------------------------- | --------------------------------- | -------------------------- |
+| `HTTP__ADDRESS`           | HTTP server listen address        | `:3000`                    |
+| `HTTP__PROXY_HEADER`      | HTTP proxy header name            | *empty*                    |
+| `HTTP__PROXIES`           | Comma-separated list of proxies   | *empty*                    |
+| `API__CORS_ALLOW_ORIGINS` | CORS allowed origins              | *empty*                    |
+| `STORAGE__URL`            | Redis connection URL              | `redis://localhost:6379/0` |
+| `LINKS__HOSTNAME`         | Base hostname for generated links | `http://localhost:3001`    |
+| `LINKS__TTL`              | Time-to-live for shortened links  | `168h`                     |
 
 ## 📝 API Documentation
-
+****
 ### Shorten URL
 ```http
 POST /api/v1/links
@@ -159,11 +161,24 @@ Response:
 }
 ```
 
-### Redirect
+### Get Link By ID
 ```http
-GET /{id}
+GET /api/v1/links/{id}
 ```
-Redirects to the original URL if found.
+
+Response:
+```json
+{
+  "link": {
+    "id": "3uqH4m",
+    "targetUrl": "https://docs.sms-gate.app",
+    "url": "https://tnfy.link/3uqH4m",
+    "createdAt": "2024-12-09T12:53:12.76979501Z",
+    "validUntil": "2024-12-16T12:53:12.76979501Z"
+  }
+}
+```
+
 
 ### Get Statistics
 ```http
@@ -189,14 +204,6 @@ Response:
   }
 }
 ```
-
-## 🔧 Development
-
-The project uses a modular architecture with the following structure:
-
-- `/internal/core` - Core components (HTTP server, Redis, Logger)
-- `/internal/links` - Link shortening business logic
-- `/internal/config` - Configuration management
 
 ## 🤝 Contributing
 
