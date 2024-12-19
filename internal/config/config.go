@@ -12,6 +12,10 @@ type HttpConfig struct {
 	Proxies     []string `envconfig:"HTTP__PROXIES"`
 }
 
+type APIConfig struct {
+	CORSAllowOrigins string `envconfig:"API__CORS_ALLOW_ORIGINS"`
+}
+
 type StorageConfig struct {
 	URL string `envconfig:"STORAGE__URL"`
 }
@@ -23,6 +27,7 @@ type LinksConfig struct {
 
 type Config struct {
 	Http    HttpConfig
+	API     APIConfig
 	Storage StorageConfig
 	Links   LinksConfig
 }
@@ -30,6 +35,9 @@ type Config struct {
 var instance = Config{
 	Http: HttpConfig{
 		Address: "127.0.0.1:3000",
+	},
+	API: APIConfig{
+		CORSAllowOrigins: "",
 	},
 	Storage: StorageConfig{
 		URL: "redis://localhost:6379/0",
