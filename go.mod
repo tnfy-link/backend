@@ -7,8 +7,8 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/itchyny/base58-go v0.2.2
 	github.com/redis/go-redis/v9 v9.7.0
-	github.com/tnfy-link/client-go v0.0.0-20241217233708-5a834d735c90
-	github.com/tnfy-link/core v0.0.0-20241219051905-e497a3a84af6
+	github.com/tnfy-link/client-go v0.1.0
+	github.com/tnfy-link/core v0.0.0-20241219081659-9c18ed84c007
 	go.uber.org/fx v1.23.0
 	go.uber.org/zap v1.27.0
 )
