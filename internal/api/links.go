@@ -44,8 +44,8 @@ func (c *Links) post(ctx *fiber.Ctx) error {
 	}
 
 	link, err := c.s.Create(ctx.Context(), req.Link)
-	if err := links.AsValidationError(err); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("failed to create link: %s", err.Error()))
+	if verr := links.AsValidationError(err); verr != nil {
+		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("failed to create link: %s", verr.Error()))
 	}
 	if err != nil {
 		c.Logger.Error("failed to create link", zap.Error(err), zap.String("link", req.Link.TargetURL))
