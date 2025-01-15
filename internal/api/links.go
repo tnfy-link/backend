@@ -21,6 +21,18 @@ type Links struct {
 	stats *stats.Service
 }
 
+//	@Summary		Get link metadata
+//	@Description	Get link metadata by ID
+//	@Tags			Links
+//	@Produce		json
+//	@Param			id	path		string	true	"Link ID"
+//	@Success		200	{object}	api.GetLinkResponse
+//	@Failure		400	{object}	http.JSONErrorResponse
+//	@Failure		404	{object}	http.JSONErrorResponse
+//	@Failure		500	{object}	http.JSONErrorResponse
+//	@Router			/links/{id} [get]
+//
+// Get Link
 func (c *Links) get(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	link, err := c.links.Get(ctx.Context(), id)
@@ -39,6 +51,18 @@ func (c *Links) get(ctx *fiber.Ctx) error {
 	)
 }
 
+//	@Summary		Shorten link
+//	@Description	Shorten link
+//	@Tags			Links
+//	@Accept			json
+//	@Produce		json
+//	@Param			link	body		api.PostLinksRequest	true	"Link"
+//	@Success		201		{object}	api.PostLinksResponse
+//	@Failure		400		{object}	http.JSONErrorResponse
+//	@Failure		500		{object}	http.JSONErrorResponse
+//	@Router			/links [post]
+//
+// Shorten link
 func (c *Links) post(ctx *fiber.Ctx) error {
 	req := api.PostLinksRequest{}
 	if err := c.BodyParserValidator(ctx, &req); err != nil {
@@ -54,13 +78,27 @@ func (c *Links) post(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to create link: %s", err.Error()))
 	}
 
-	return ctx.JSON(
-		api.PostLinksResponse{
-			Link: link,
-		},
-	)
+	return ctx.
+		Status(fiber.StatusCreated).
+		JSON(
+			api.PostLinksResponse{
+				Link: link,
+			},
+		)
 }
 
+//	@Summary		Get link stats
+//	@Description	Get link stats by ID
+//	@Tags			Links
+//	@Produce		json
+//	@Param			id	path		string	true	"Link ID"
+//	@Success		200	{object}	api.GetStatsResponse
+//	@Failure		400	{object}	http.JSONErrorResponse
+//	@Failure		404	{object}	http.JSONErrorResponse
+//	@Failure		500	{object}	http.JSONErrorResponse
+//	@Router			/links/{id}/stats [get]
+//
+// Get Statistics
 func (c *Links) getStats(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	s, err := c.stats.Get(ctx.Context(), id)

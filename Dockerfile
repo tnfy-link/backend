@@ -12,6 +12,8 @@ ARG GO_VERSION=1.23.2
 FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
 WORKDIR /src
 
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /go/pkg/mod/ to speed up subsequent builds.
 # Leverage bind mounts to go.sum and go.mod to avoid having to copy them into
@@ -24,14 +26,18 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
 # This is the architecture you're building for, which is passed in by the builder.
 # Placing it here allows the previous steps to be cached across architectures.
 ARG TARGETARCH
+ARG APP_VERSION=1.0.0
+ARG APP_RELEASE_ID=1
 
 # Build the application.
 # Leverage a cache mount to /go/pkg/mod/ to speed up subsequent builds.
 # Leverage a bind mount to the current directory to avoid having to copy the
 # source code into the container.
 RUN --mount=type=cache,target=/go/pkg/mod/ \
-    --mount=type=bind,target=. \
-    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/server .
+    --mount=type=bind,target=.,rw \
+    go generate \
+    && \
+    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -ldflags="-s -w -X github.com/tnfy-link/backend/internal/version.AppVersion=${APP_VERSION} -X github.com/tnfy-link/backend/internal/version.AppRelease=${APP_RELEASE_ID}" -o /bin/server .
 
 ################################################################################
 # Create a new stage for running the application that contains the minimal
@@ -50,10 +56,10 @@ FROM alpine:latest AS final
 # Leverage a cache mount to /var/cache/apk/ to speed up subsequent builds.
 RUN --mount=type=cache,target=/var/cache/apk \
     apk --update add \
-        ca-certificates \
-        tzdata \
-        && \
-        update-ca-certificates
+    ca-certificates \
+    tzdata \
+    && \
+    update-ca-certificates
 
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/

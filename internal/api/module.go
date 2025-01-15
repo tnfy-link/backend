@@ -3,10 +3,14 @@ package api
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/swagger"
 	"github.com/tnfy-link/core/http"
 	"github.com/tnfy-link/core/http/jsonify"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+
+	apidoc "github.com/tnfy-link/backend/api"
+	"github.com/tnfy-link/backend/internal/version"
 )
 
 var Module = fx.Module(
@@ -21,6 +25,11 @@ var Module = fx.Module(
 	fx.Provide(NewLinks),
 	fx.Invoke(func(app *fiber.App, l *Links, config Config) {
 		api := app.Group("/api/v1")
+
+		apidoc.SwaggerInfo.Version = version.AppVersion
+		api.Get("/docs/*", swagger.New(swagger.Config{
+			Layout: "BaseLayout",
+		}))
 
 		if config.CORSAllowOrigins != "" {
 			api.Use(cors.New(cors.Config{

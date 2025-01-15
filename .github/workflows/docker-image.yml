@@ -39,9 +39,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set APP_VERSION env
+        run: echo APP_VERSION=$(echo ${GITHUB_REF} | rev | cut -d'/' -f 1 | rev ) >> ${GITHUB_ENV}
+      - name: Set APP_RELEASE env
+        run: echo APP_RELEASE=$(( ($(date +%s) - $(date -d "2024-12-07" +%s)) / 86400 )) >> ${GITHUB_ENV}
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
+          build-args: |
+            APP_VERSION=${{ env.APP_VERSION }}
+            APP_RELEASE_ID=${{ env.APP_RELEASE }}
           push: ${{ github.actor != 'dependabot[bot]' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
