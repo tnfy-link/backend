@@ -14,7 +14,6 @@
   - [🚀 Features](#-features)
   - [🛠 Tech Stack](#-tech-stack)
   - [🏃‍♂️ Quick Start](#️-quick-start)
-    - [Using Prebuilt Image](#using-prebuilt-image)
     - [Using Docker Compose with Local Build](#using-docker-compose-with-local-build)
     - [Manual Setup](#manual-setup)
   - [⚙️ Configuration](#️-configuration)
@@ -25,7 +24,7 @@
   - [🤝 Contributing](#-contributing)
   - [📄 License](#-license)
 
-A high-performance URL shortener service built with Go, using modern technologies and best practices. This service provides fast and reliable URL shortening capabilities with Redis-based storage.
+The backend of a high-performance URL shortener service built with Go, using modern technologies and best practices. This service provides fast and reliable URL shortening capabilities with Redis-based storage.
 
 
 ## 🚀 Features
@@ -49,41 +48,6 @@ A high-performance URL shortener service built with Go, using modern technologie
 - **Containerization**: Docker
 
 ## 🏃‍♂️ Quick Start
-
-### Using Prebuilt Image
-
-The fastest way to get started is using our prebuilt image from GitHub Container Registry:
-
-1. Create a docker-compose.yml:
-    ```yaml
-    services:
-      server:
-        image: ghcr.io/tnfy-link/backend:latest
-        ports:
-          - "3000:3000"
-        environment:
-          - HTTP__ADDRESS=:3000
-          - STORAGE__URL=redis://redis:6379/0
-          - LINKS__HOSTNAME=http://localhost:3000
-          - LINKS__TTL=168h
-        depends_on:
-          - redis
-      
-      redis:
-        image: redis:7-alpine
-        volumes:
-          - redis-data:/data
-
-    volumes:
-      redis-data:
-    ```
-
-2. Start the services:
-    ```bash
-    docker compose up -d
-    ```
-
-The service will be available at `http://localhost:3000`
 
 ### Using Docker Compose with Local Build
 

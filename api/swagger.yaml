@@ -1,0 +1,179 @@
+basePath: /v1
+definitions:
+  api.CreateLink:
+    properties:
+      targetUrl:
+        description: Target link to shorten
+        type: string
+    required:
+    - targetUrl
+    type: object
+  api.GetLinkResponse:
+    properties:
+      link:
+        $ref: '#/definitions/api.Link'
+    type: object
+  api.GetStatsResponse:
+    properties:
+      stats:
+        $ref: '#/definitions/api.Stats'
+    type: object
+  api.Link:
+    properties:
+      createdAt:
+        description: Created at
+        type: string
+      id:
+        description: ID
+        type: string
+      targetUrl:
+        description: Target link
+        type: string
+      url:
+        description: Short link
+        type: string
+      validUntil:
+        description: Valid until
+        type: string
+    type: object
+  api.PostLinksRequest:
+    properties:
+      link:
+        $ref: '#/definitions/api.CreateLink'
+    type: object
+  api.PostLinksResponse:
+    properties:
+      link:
+        $ref: '#/definitions/api.Link'
+    type: object
+  api.Stats:
+    properties:
+      labels:
+        additionalProperties:
+          additionalProperties:
+            type: integer
+          type: object
+        description: Redirects by labels' values
+        type: object
+      total:
+        description: Total redirects
+        type: integer
+    type: object
+  http.JSONErrorResponse:
+    properties:
+      error:
+        properties:
+          code:
+            description: Code
+            type: integer
+          message:
+            description: Message
+            type: string
+        type: object
+    type: object
+host: api.tnfy.link
+info:
+  contact:
+    email: support@tnfy.link
+    name: tnfy.link Support
+  description: The backend of the tnfy.link URL shortener allows you to shorten URLs
+    and get statistics.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: tnfy.link backend API
+  version: '{{VERSION}}'
+paths:
+  /links:
+    post:
+      consumes:
+      - application/json
+      description: Shorten link
+      parameters:
+      - description: Link
+        in: body
+        name: link
+        required: true
+        schema:
+          $ref: '#/definitions/api.PostLinksRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api.PostLinksResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.JSONErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.JSONErrorResponse'
+      summary: Shorten link
+      tags:
+      - Links
+  /links/{id}:
+    get:
+      description: Get link metadata by ID
+      parameters:
+      - description: Link ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.GetLinkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.JSONErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.JSONErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.JSONErrorResponse'
+      summary: Get link metadata
+      tags:
+      - Links
+  /links/{id}/stats:
+    get:
+      description: Get link stats by ID
+      parameters:
+      - description: Link ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.GetStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.JSONErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/http.JSONErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.JSONErrorResponse'
+      summary: Get link stats
+      tags:
+      - Links
+swagger: "2.0"
