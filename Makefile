@@ -34,8 +34,14 @@ run:
 	docker compose up --build
 
 api-docs:
-	swag fmt -g ./main.go \
-		&& swag init --parseDependency -g ./main.go -o ./api
+	@if ! swag fmt -g ./main.go; then \
+		echo "Error: Failed to format API docs"; \
+		exit 1; \
+	fi
+	@if ! swag init --parseDependency -g ./main.go -o ./api; then \
+		echo "Error: Failed to generate API docs"; \
+		exit 1; \
+	fi
 
 deps:
 	$(GOGET) -v -d ./...

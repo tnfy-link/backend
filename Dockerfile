@@ -12,7 +12,9 @@ ARG GO_VERSION=1.23.2
 FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
 WORKDIR /src
 
-RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go install github.com/swaggo/swag/cmd/swag@latest
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /go/pkg/mod/ to speed up subsequent builds.

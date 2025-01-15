@@ -9,7 +9,7 @@ require (
 	github.com/itchyny/base58-go v0.2.2
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/swaggo/swag v1.16.4
-	github.com/tnfy-link/client-go v0.1.0
+	github.com/tnfy-link/client-go v0.1.1
 	github.com/tnfy-link/core v0.0.0-20250115054312-1c6c14efa7f7
 	go.uber.org/fx v1.23.0
 	go.uber.org/zap v1.27.0
