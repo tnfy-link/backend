@@ -58,7 +58,8 @@ func (c *Links) get(ctx *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			link	body		api.PostLinksRequest	true	"Link"
 //	@Success		201		{object}	api.PostLinksResponse
-//	@Failure		400		{object}	http.JSONErrorResponse
+//	@Failure		400		{object}	http.JSONErrorResponse "Bad Request"
+//	@Failure		429		{object}	http.JSONErrorResponse "Too many requests"
 //	@Failure		500		{object}	http.JSONErrorResponse
 //	@Router			/links [post]
 //

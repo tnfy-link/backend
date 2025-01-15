@@ -4,7 +4,8 @@ import "strconv"
 
 const notSet string = "not set"
 
-// these information will be collected when build, by `-ldflags "-X main.appVersion=0.1"`
+// These variables are populated at build time using ldflags.
+// Example: go build -ldflags "-X github.com/tnfy-link/backend/internal/version.AppVersion=0.1 -X github.com/tnfy-link/backend/internal/version.AppRelease=123"
 var (
 	AppVersion = notSet
 	AppRelease = notSet

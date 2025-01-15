@@ -99,7 +99,9 @@ Configuration is done through environment variables:
 | `LINKS__TTL`              | Time-to-live for shortened links  | `168h`                     |
 
 ## 📝 API Documentation
-****
+
+API documentation is available through Swagger UI at the `/docs` endpoint when the service is running.
+
 ### Shorten URL
 ```http
 POST /api/v1/links

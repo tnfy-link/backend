@@ -59,6 +59,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/http.JSONErrorResponse"
                         }
                     },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/http.JSONErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -197,7 +203,8 @@ const docTemplate = `{
             "properties": {
                 "createdAt": {
                     "description": "Created at",
-                    "type": "string"
+                    "type": "string",
+                    "format": "date-time"
                 },
                 "id": {
                     "description": "ID",
@@ -205,15 +212,18 @@ const docTemplate = `{
                 },
                 "targetUrl": {
                     "description": "Target link",
-                    "type": "string"
+                    "type": "string",
+                    "format": "uri"
                 },
                 "url": {
                     "description": "Short link",
-                    "type": "string"
+                    "type": "string",
+                    "format": "uri"
                 },
                 "validUntil": {
                     "description": "Valid until",
-                    "type": "string"
+                    "type": "string",
+                    "format": "date-time"
                 }
             }
         },
