@@ -1,0 +1,281 @@
+{
+    "schemes": [
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "The backend of the tnfy.link URL shortener allows you to shorten URLs and get statistics.",
+        "title": "tnfy.link backend API",
+        "contact": {
+            "name": "tnfy.link Support",
+            "email": "support@tnfy.link"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "{{VERSION}}"
+    },
+    "host": "api.tnfy.link",
+    "basePath": "/v1",
+    "paths": {
+        "/links": {
+            "post": {
+                "description": "Shorten link",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Links"
+                ],
+                "summary": "Shorten link",
+                "parameters": [
+                    {
+                        "description": "Link",
+                        "name": "link",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.PostLinksRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/api.PostLinksResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.JSONErrorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/http.JSONErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.JSONErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/links/{id}": {
+            "get": {
+                "description": "Get link metadata by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Links"
+                ],
+                "summary": "Get link metadata",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Link ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GetLinkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.JSONErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.JSONErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.JSONErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/links/{id}/stats": {
+            "get": {
+                "description": "Get link stats by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Links"
+                ],
+                "summary": "Get link stats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Link ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GetStatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.JSONErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/http.JSONErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.JSONErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "api.CreateLink": {
+            "type": "object",
+            "required": [
+                "targetUrl"
+            ],
+            "properties": {
+                "targetUrl": {
+                    "description": "Target link to shorten",
+                    "type": "string"
+                }
+            }
+        },
+        "api.GetLinkResponse": {
+            "type": "object",
+            "properties": {
+                "link": {
+                    "$ref": "#/definitions/api.Link"
+                }
+            }
+        },
+        "api.GetStatsResponse": {
+            "type": "object",
+            "properties": {
+                "stats": {
+                    "$ref": "#/definitions/api.Stats"
+                }
+            }
+        },
+        "api.Link": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "description": "Created at",
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "id": {
+                    "description": "ID",
+                    "type": "string"
+                },
+                "targetUrl": {
+                    "description": "Target link",
+                    "type": "string",
+                    "format": "uri"
+                },
+                "url": {
+                    "description": "Short link",
+                    "type": "string",
+                    "format": "uri"
+                },
+                "validUntil": {
+                    "description": "Valid until",
+                    "type": "string",
+                    "format": "date-time"
+                }
+            }
+        },
+        "api.PostLinksRequest": {
+            "type": "object",
+            "properties": {
+                "link": {
+                    "$ref": "#/definitions/api.CreateLink"
+                }
+            }
+        },
+        "api.PostLinksResponse": {
+            "type": "object",
+            "properties": {
+                "link": {
+                    "$ref": "#/definitions/api.Link"
+                }
+            }
+        },
+        "api.Stats": {
+            "type": "object",
+            "properties": {
+                "labels": {
+                    "description": "Redirects by labels' values",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "total": {
+                    "description": "Total redirects",
+                    "type": "integer"
+                }
+            }
+        },
+        "http.JSONErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "description": "Code",
+                            "type": "integer"
+                        },
+                        "message": {
+                            "description": "Message",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
