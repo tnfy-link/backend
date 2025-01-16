@@ -100,7 +100,7 @@ Configuration is done through environment variables:
 
 ## 📝 API Documentation
 
-API documentation is available through Swagger UI at the `/docs` endpoint when the service is running.
+API documentation is available through Swagger UI at https://tnfy-link.github.io/backend/ and at the `/api/v1/docs` endpoint of the backend.
 
 ### Shorten URL
 ```http
