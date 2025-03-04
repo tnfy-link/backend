@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/tnfy-link/backend/internal/id"
 	"github.com/tnfy-link/core/config"
 )
 
@@ -25,11 +26,16 @@ type LinksConfig struct {
 	TTL      time.Duration `envconfig:"LINKS__TTL"`
 }
 
+type IDConfig struct {
+	Provider id.Provider `envconfig:"ID__PROVIDER"`
+}
+
 type Config struct {
 	Http    HttpConfig
 	API     APIConfig
 	Storage StorageConfig
 	Links   LinksConfig
+	ID      IDConfig
 }
 
 var instance = Config{
@@ -45,6 +51,9 @@ var instance = Config{
 	Links: LinksConfig{
 		Hostname: "http://localhost:3001",
 		TTL:      time.Hour * 24 * 7,
+	},
+	ID: IDConfig{
+		Provider: id.ProviderRandom,
 	},
 }
 

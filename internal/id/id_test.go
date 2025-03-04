@@ -1,40 +1,15 @@
 package id_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/tnfy-link/backend/internal/id"
+	"github.com/tnfy-link/backend/internal/id/provider"
 )
 
-func TestGenerator_New(t *testing.T) {
-	type fields struct {
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    string
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-
-	g := id.NewGenerator()
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := g.New()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Generator.New() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("Generator.New() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGeneratorValidate(t *testing.T) {
-	g := id.NewGenerator()
+	g := id.NewGenerator(provider.NewRandomGenerator())
 
 	tests := []struct {
 		name    string
@@ -43,7 +18,7 @@ func TestGeneratorValidate(t *testing.T) {
 	}{
 		{
 			name:    "valid ID",
-			id:      func() string { id, _ := g.New(); return id }(),
+			id:      func() string { id, _ := g.New(context.Background()); return id }(),
 			wantErr: false,
 		},
 		{
@@ -78,27 +53,27 @@ func TestGeneratorValidate(t *testing.T) {
 }
 
 func BenchmarkGeneratorNew(b *testing.B) {
-	g := id.NewGenerator()
+	g := id.NewGenerator(provider.NewRandomGenerator())
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = g.New()
+		_, _ = g.New(context.Background())
 	}
 }
 
 func BenchmarkGeneratorNewParallel(b *testing.B) {
-	g := id.NewGenerator()
+	g := id.NewGenerator(provider.NewRandomGenerator())
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_, _ = g.New()
+			_, _ = g.New(context.Background())
 		}
 	})
 }
 
 func BenchmarkGeneratorValidate(b *testing.B) {
-	g := id.NewGenerator()
-	validID, _ := g.New() // Generate a valid ID
+	g := id.NewGenerator(provider.NewRandomGenerator())
+	validID, _ := g.New(context.Background()) // Generate a valid ID
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -107,7 +82,7 @@ func BenchmarkGeneratorValidate(b *testing.B) {
 }
 
 func BenchmarkGeneratorValidateInvalid(b *testing.B) {
-	g := id.NewGenerator()
+	g := id.NewGenerator(provider.NewRandomGenerator())
 	invalidID := "invalid-id"
 
 	b.ResetTimer()
@@ -117,7 +92,7 @@ func BenchmarkGeneratorValidateInvalid(b *testing.B) {
 }
 
 func BenchmarkGeneratorValidateEmpty(b *testing.B) {
-	g := id.NewGenerator()
+	g := id.NewGenerator(provider.NewRandomGenerator())
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

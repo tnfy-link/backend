@@ -25,7 +25,7 @@ func (s *Service) Create(ctx context.Context, target NewLink) (api.Link, error) 
 		return api.Link{}, newValidationError("link", err)
 	}
 
-	id, err := s.idgen.New()
+	id, err := s.idgen.New(ctx)
 	if err != nil {
 		return api.Link{}, fmt.Errorf("failed to generate id: %w", err)
 	}
