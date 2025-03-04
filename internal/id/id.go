@@ -1,27 +1,28 @@
 package id
 
 import (
-	"crypto/rand"
-	"encoding/binary"
+	"context"
 	"fmt"
 
 	"github.com/itchyny/base58-go"
 )
 
-type Generator struct {
-	encoder *base58.Encoding
+type idProvider interface {
+	New(context.Context) (uint32, error)
 }
 
-func (g *Generator) New() (string, error) {
-	var randomValue uint32
-	err := binary.Read(rand.Reader, binary.BigEndian, &randomValue)
+type Generator struct {
+	encoder    *base58.Encoding
+	idProvider idProvider
+}
+
+func (g *Generator) New(ctx context.Context) (string, error) {
+	randomValue, err := g.idProvider.New(ctx)
 	if err != nil {
-		return "", fmt.Errorf("failed to read random value: %w", err)
+		return "", fmt.Errorf("failed to generate new id: %w", err)
 	}
 
-	id := g.encoder.EncodeUint64(uint64(randomValue))
-
-	return string(id), nil
+	return string(g.encoder.EncodeUint64(uint64(randomValue))), nil
 }
 
 func (g *Generator) Validate(id string) error {
@@ -34,8 +35,13 @@ func (g *Generator) Validate(id string) error {
 	return nil
 }
 
-func NewGenerator() *Generator {
+func NewGenerator(source idProvider) *Generator {
+	if source == nil {
+		panic("source is required")
+	}
+
 	return &Generator{
-		encoder: base58.FlickrEncoding,
+		encoder:    base58.FlickrEncoding,
+		idProvider: source,
 	}
 }

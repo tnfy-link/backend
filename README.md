@@ -88,15 +88,16 @@ The backend of a high-performance URL shortener service built with Go, using mod
 
 Configuration is done through environment variables:
 
-| Variable                  | Description                       | Default                    |
-| ------------------------- | --------------------------------- | -------------------------- |
-| `HTTP__ADDRESS`           | HTTP server listen address        | `:3000`                    |
-| `HTTP__PROXY_HEADER`      | HTTP proxy header name            | *empty*                    |
-| `HTTP__PROXIES`           | Comma-separated list of proxies   | *empty*                    |
-| `API__CORS_ALLOW_ORIGINS` | CORS allowed origins              | *empty*                    |
-| `STORAGE__URL`            | Redis connection URL              | `redis://localhost:6379/0` |
-| `LINKS__HOSTNAME`         | Base hostname for generated links | `http://localhost:3001`    |
-| `LINKS__TTL`              | Time-to-live for shortened links  | `168h`                     |
+| Variable                  | Description                          | Default                    |
+| ------------------------- | ------------------------------------ | -------------------------- |
+| `HTTP__ADDRESS`           | HTTP server listen address           | `:3000`                    |
+| `HTTP__PROXY_HEADER`      | HTTP proxy header name               | *empty*                    |
+| `HTTP__PROXIES`           | Comma-separated list of proxies      | *empty*                    |
+| `API__CORS_ALLOW_ORIGINS` | CORS allowed origins                 | *empty*                    |
+| `STORAGE__URL`            | Redis connection URL                 | `redis://localhost:6379/0` |
+| `LINKS__HOSTNAME`         | Base hostname for generated links    | `http://localhost:3001`    |
+| `LINKS__TTL`              | Time-to-live for shortened links     | `168h`                     |
+| `ID__PROVIDER`            | ID provider (`random` or `combined`) | `random`                   |
 
 ## 📝 API Documentation
 
