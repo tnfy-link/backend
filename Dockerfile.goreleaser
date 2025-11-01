@@ -6,11 +6,18 @@ ARG BINARY_NAME
 # Install certificates and timezone data
 RUN apk add --no-cache ca-certificates tzdata
 
+# Create non-root user
+RUN addgroup -g 1000 appuser && \
+    adduser -D -u 1000 -G appuser appuser
+
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
 # Copy the Pre-built binary file from GoReleaser
 COPY $TARGETPLATFORM/$BINARY_NAME ./server
+RUN chown appuser:appuser ./server
+
+USER appuser
 
 # Command to run the executable
 ENTRYPOINT ["/app/server"]

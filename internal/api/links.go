@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
@@ -21,6 +22,28 @@ type Links struct {
 	stats *stats.Service
 }
 
+func NewLinks(links *links.Service, stats *stats.Service, v *validator.Validate, l *zap.Logger) *Links {
+	switch {
+	case links == nil:
+		panic("links service is required")
+	case stats == nil:
+		panic("stats service is required")
+	case v == nil:
+		panic("validator is required")
+	case l == nil:
+		panic("logger is required")
+	}
+
+	return &Links{
+		Base: handler.Base{
+			Validator: v,
+			Logger:    l,
+		},
+		links: links,
+		stats: stats,
+	}
+}
+
 //	@Summary		Get link metadata
 //	@Description	Get link metadata by ID
 //	@Tags			Links
@@ -32,16 +55,16 @@ type Links struct {
 //	@Failure		500	{object}	http.JSONErrorResponse
 //	@Router			/links/{id} [get]
 //
-// Get Link
+// Get Link.
 func (c *Links) get(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	link, err := c.links.Get(ctx.Context(), id)
-	if err == links.ErrLinkNotFound {
-		return ctx.SendStatus(fiber.StatusNotFound)
+	if errors.Is(err, links.ErrLinkNotFound) {
+		return fiber.NewError(fiber.StatusNotFound, "link not found")
 	}
 	if err != nil {
 		c.Logger.Error("failed to get link", zap.Error(err), zap.String("id", id))
-		return ctx.SendStatus(fiber.StatusInternalServerError)
+		return fiber.NewError(fiber.StatusInternalServerError, "failed to get link")
 	}
 
 	return ctx.JSON(
@@ -58,16 +81,16 @@ func (c *Links) get(ctx *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			link	body		api.PostLinksRequest	true	"Link"
 //	@Success		201		{object}	api.PostLinksResponse
-//	@Failure		400		{object}	http.JSONErrorResponse "Bad Request"
-//	@Failure		429		{object}	http.JSONErrorResponse "Too many requests"
+//	@Failure		400		{object}	http.JSONErrorResponse	"Bad Request"
+//	@Failure		429		{object}	http.JSONErrorResponse	"Too many requests"
 //	@Failure		500		{object}	http.JSONErrorResponse
 //	@Router			/links [post]
 //
-// Shorten link
+// Shorten link.
 func (c *Links) post(ctx *fiber.Ctx) error {
-	req := api.PostLinksRequest{}
-	if err := c.BodyParserValidator(ctx, &req); err != nil {
-		return err
+	req := new(api.PostLinksRequest)
+	if err := c.BodyParserValidator(ctx, req); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	link, err := c.links.Create(ctx.Context(), links.NewNewLink(req.Link.TargetURL))
@@ -76,7 +99,10 @@ func (c *Links) post(ctx *fiber.Ctx) error {
 	}
 	if err != nil {
 		c.Logger.Error("failed to create link", zap.Error(err), zap.String("link", req.Link.TargetURL))
-		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to create link: %s", err.Error()))
+		return fiber.NewError(
+			fiber.StatusInternalServerError,
+			"failed to create link, try again later or contact support",
+		)
 	}
 
 	return ctx.
@@ -99,16 +125,19 @@ func (c *Links) post(ctx *fiber.Ctx) error {
 //	@Failure		500	{object}	http.JSONErrorResponse
 //	@Router			/links/{id}/stats [get]
 //
-// Get Statistics
+// Get Statistics.
 func (c *Links) getStats(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	s, err := c.stats.Get(ctx.Context(), id)
-	if err == stats.ErrNotFound {
-		return ctx.SendStatus(fiber.StatusNotFound)
+	if errors.Is(err, stats.ErrNotFound) {
+		return fiber.NewError(fiber.StatusNotFound, "stats not found")
 	}
 	if err != nil {
 		c.Logger.Error("failed to get stats", zap.Error(err), zap.String("id", id))
-		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("failed to get link stats: %s", err.Error()))
+		return fiber.NewError(
+			fiber.StatusInternalServerError,
+			"failed to get link stats, try again later or contact support",
+		)
 	}
 
 	return ctx.JSON(
@@ -128,27 +157,4 @@ func (c *Links) Register(router fiber.Router) {
 		c.post,
 	)
 	router.Get("/:id/stats", idValidator, c.getStats)
-}
-
-func NewLinks(links *links.Service, stats *stats.Service, v *validator.Validate, l *zap.Logger) *Links {
-	switch {
-	case links == nil:
-		panic("links service is required")
-	case stats == nil:
-		panic("stats service is required")
-	case v == nil:
-		panic("validator is required")
-	case l == nil:
-		panic("logger is required")
-
-	}
-
-	return &Links{
-		Base: handler.Base{
-			Validator: v,
-			Logger:    l,
-		},
-		links: links,
-		stats: stats,
-	}
 }

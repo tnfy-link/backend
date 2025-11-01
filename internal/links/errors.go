@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	ErrValidationFailed  = errors.New("validation failed")
 	ErrLinkNotFound      = errors.New("link not found")
 	ErrLinkAlreadyExists = errors.New("link already exists")
 )

@@ -7,13 +7,13 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
 
-func New(max int) fiber.Handler {
-	if max <= 0 {
-		panic("max must be greater than 0")
+func New(limit int) fiber.Handler {
+	if limit <= 0 {
+		panic("limit must be greater than 0")
 	}
 
 	return limiter.New(limiter.Config{
-		Max:                max,
+		Max:                limit,
 		SkipFailedRequests: true,
 		Expiration:         time.Second,
 	})

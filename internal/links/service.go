@@ -20,6 +20,33 @@ type Service struct {
 	ttl      time.Duration
 }
 
+func NewService(
+	idgen *id.Generator,
+	links *repository,
+	logger *zap.Logger,
+	config Config,
+) *Service {
+	if idgen == nil {
+		panic("id generator is required")
+	}
+	if links == nil {
+		panic("links repository is required")
+	}
+	if logger == nil {
+		panic("logger is required")
+	}
+
+	return &Service{
+		idgen: idgen,
+
+		links:  links,
+		logger: logger,
+
+		hostname: config.Hostname,
+		ttl:      config.TTL,
+	}
+}
+
 func (s *Service) Create(ctx context.Context, target NewLink) (api.Link, error) {
 	if err := target.Validate(); err != nil {
 		return api.Link{}, newValidationError("link", err)
@@ -65,32 +92,9 @@ func (s *Service) GetTarget(ctx context.Context, id string) (string, error) {
 }
 
 func (s *Service) ValidateID(id string) error {
-	return s.idgen.Validate(id)
-}
-
-func NewService(
-	idgen *id.Generator,
-	links *repository,
-	logger *zap.Logger,
-	config Config,
-) *Service {
-	if idgen == nil {
-		panic("id generator is required")
-	}
-	if links == nil {
-		panic("links repository is required")
-	}
-	if logger == nil {
-		panic("logger is required")
+	if err := s.idgen.Validate(id); err != nil {
+		return fmt.Errorf("invalid id: %w", err)
 	}
 
-	return &Service{
-		idgen: idgen,
-
-		links:  links,
-		logger: logger,
-
-		hostname: config.Hostname,
-		ttl:      config.TTL,
-	}
+	return nil
 }

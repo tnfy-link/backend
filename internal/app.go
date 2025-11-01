@@ -28,11 +28,11 @@ func Run() {
 		redis.Module,
 		validator.Module,
 
-		config.Module,
-		api.Module,
-		id.Module,
-		links.Module,
-		stats.Module,
+		config.Module(),
+		api.Module(),
+		id.Module(),
+		links.Module(),
+		stats.Module(),
 	).
 		Run()
 }

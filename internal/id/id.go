@@ -16,6 +16,17 @@ type Generator struct {
 	idProvider idProvider
 }
 
+func NewGenerator(source idProvider) *Generator {
+	if source == nil {
+		panic("source is required")
+	}
+
+	return &Generator{
+		encoder:    base58.FlickrEncoding,
+		idProvider: source,
+	}
+}
+
 func (g *Generator) New(ctx context.Context) (string, error) {
 	randomValue, err := g.idProvider.New(ctx)
 	if err != nil {
@@ -33,15 +44,4 @@ func (g *Generator) Validate(id string) error {
 		return ErrInvalidID
 	}
 	return nil
-}
-
-func NewGenerator(source idProvider) *Generator {
-	if source == nil {
-		panic("source is required")
-	}
-
-	return &Generator{
-		encoder:    base58.FlickrEncoding,
-		idProvider: source,
-	}
 }

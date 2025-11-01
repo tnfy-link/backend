@@ -20,8 +20,9 @@ func newLink(id string, values map[string]string) (api.Link, error) {
 
 	return api.Link{
 		ID:         id,
-		TargetURL:  values[fieldTargetUrl],
+		TargetURL:  values[fieldTargetURL],
 		CreatedAt:  createdAt,
 		ValidUntil: validUntil,
+		URL:        "",
 	}, nil
 }
