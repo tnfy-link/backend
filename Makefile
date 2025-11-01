@@ -1,52 +1,32 @@
-# Go parameters
-GOCMD=go
-GOBUILD=$(GOCMD) build
-GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test
-GOGET=$(GOCMD) get
+.PHONY: all fmt lint test coverage benchmark deps release clean help
 
-# Linting
-GOLINT=golangci-lint
+all: fmt lint test benchmark ## Run all tests and checks
 
-AIR=air
+fmt: ## Format the code
+	golangci-lint fmt
 
-all: lint test benchmark
+lint: ## Lint the code
+	golangci-lint run --timeout=5m
 
-air:
-	$(AIR) -c .air.toml
+test: ## Run tests
+	go test -race -shuffle=on -count=1 -covermode=atomic -coverpkg=./... -coverprofile=coverage.out ./...
 
-test:
-	$(GOTEST) -v -coverprofile=coverage.out ./...
-	$(GOCMD) tool cover -html=coverage.out -o coverage.html
+coverage: test ## Generate coverage
+	go tool cover -func=coverage.out
+	go tool cover -html=coverage.out -o coverage.html
 
-benchmark:
-	$(GOTEST) -v -bench=. -benchmem ./...
+benchmark: ## Run benchmarks
+	go test -run=^$$ -bench=. -benchmem ./... | tee benchmark.txt
 
-lint:
-	$(GOLINT) run
+deps: ## Install dependencies
+	go mod download
 
-clean:
-	$(GOCLEAN)
-	rm -f coverage.out
-	rm -f coverage.html
+release: ## Create release
+	goreleaser release --snapshot --clean
 
-run:
-	docker compose up --build
+clean: ## Remove build artifacts
+	rm -f coverage.* benchmark.txt
+	rm -rf dist
 
-api-docs:
-	@if ! swag fmt -g ./main.go; then \
-		echo "Error: Failed to format API docs"; \
-		exit 1; \
-	fi
-	@if ! swag init --parseDependency -g ./main.go -o ./api; then \
-		echo "Error: Failed to generate API docs"; \
-		exit 1; \
-	fi
-
-deps:
-	$(GOGET) -v -d ./...
-	go install github.com/cosmtrek/air@latest
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	go install github.com/swaggo/swag/cmd/swag@latest
-
-.PHONY: all air test benchmark lint clean run
+help: ## Show this help
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
