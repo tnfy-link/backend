@@ -16,7 +16,7 @@ import "github.com/tnfy-link/backend/internal"
 
 //	@host		api.tnfy.link
 //	@BasePath	/v1
-//  @schemes	https
+//	@schemes	https
 
 func main() {
 	internal.Run()

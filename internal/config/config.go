@@ -1,13 +1,14 @@
 package config
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/tnfy-link/backend/internal/id"
 	"github.com/tnfy-link/core/config"
 )
 
-type HttpConfig struct {
+type HTTPConfig struct {
 	Address     string   `envconfig:"HTTP__ADDRESS"`
 	ProxyHeader string   `envconfig:"HTTP__PROXY_HEADER"`
 	Proxies     []string `envconfig:"HTTP__PROXIES"`
@@ -31,32 +32,46 @@ type IDConfig struct {
 }
 
 type Config struct {
-	Http    HttpConfig
+	HTTP    HTTPConfig
 	API     APIConfig
 	Storage StorageConfig
 	Links   LinksConfig
 	ID      IDConfig
 }
 
-var instance = Config{
-	Http: HttpConfig{
-		Address: "127.0.0.1:3000",
-	},
-	API: APIConfig{
-		CORSAllowOrigins: "",
-	},
-	Storage: StorageConfig{
-		URL: "redis://localhost:6379/0",
-	},
-	Links: LinksConfig{
-		Hostname: "http://localhost:3001",
-		TTL:      time.Hour * 24 * 7,
-	},
-	ID: IDConfig{
-		Provider: id.ProviderRandom,
-	},
+const (
+	defaultLinksTTL = time.Hour * 24 * 7
+)
+
+func Default() Config {
+	return Config{
+		HTTP: HTTPConfig{
+			Address:     "127.0.0.1:3000",
+			ProxyHeader: "X-Forwarded-For",
+			Proxies:     []string{},
+		},
+		API: APIConfig{
+			CORSAllowOrigins: "",
+		},
+		Storage: StorageConfig{
+			URL: "redis://localhost:6379/0",
+		},
+		Links: LinksConfig{
+			Hostname: "http://localhost:3001",
+			TTL:      defaultLinksTTL,
+		},
+		ID: IDConfig{
+			Provider: id.ProviderRandom,
+		},
+	}
 }
 
 func New() (Config, error) {
-	return instance, config.Load(&instance)
+	instance := Default()
+
+	if err := config.Load(&instance); err != nil {
+		return instance, fmt.Errorf("failed to load config: %w", err)
+	}
+
+	return instance, nil
 }

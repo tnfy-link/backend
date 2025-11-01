@@ -2,6 +2,7 @@ package links
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -13,7 +14,7 @@ const (
 	keyIndex        = "links:index"
 	keyTemplateMeta = "links:%s:meta"
 
-	fieldTargetUrl  = "targetUrl"
+	fieldTargetURL  = "targetUrl"
 	fieldCreatedAt  = "createdAt"
 	fieldValidUntil = "validUntil"
 )
@@ -26,7 +27,7 @@ func (r *repository) Get(ctx context.Context, id string) (api.Link, error) {
 	keyMeta := fmt.Sprintf(keyTemplateMeta, id)
 
 	value, err := r.redis.HGetAll(ctx, keyMeta).Result()
-	if err == redis.Nil || len(value) == 0 {
+	if errors.Is(err, redis.Nil) || len(value) == 0 {
 		return api.Link{}, ErrLinkNotFound
 	} else if err != nil {
 		return api.Link{}, fmt.Errorf("failed to get link: %w", err)
@@ -35,8 +36,8 @@ func (r *repository) Get(ctx context.Context, id string) (api.Link, error) {
 }
 
 func (r *repository) GetTarget(ctx context.Context, id string) (string, error) {
-	value, err := r.redis.HGet(ctx, fmt.Sprintf(keyTemplateMeta, id), fieldTargetUrl).Result()
-	if err == redis.Nil {
+	value, err := r.redis.HGet(ctx, fmt.Sprintf(keyTemplateMeta, id), fieldTargetURL).Result()
+	if errors.Is(err, redis.Nil) {
 		return "", ErrLinkNotFound
 	} else if err != nil {
 		return "", fmt.Errorf("failed to get target: %w", err)
@@ -56,15 +57,15 @@ func (r *repository) Create(ctx context.Context, link api.Link) error {
 	keyMeta := fmt.Sprintf(keyTemplateMeta, link.ID)
 	pipe := r.redis.TxPipeline()
 	pipe.HSet(ctx, keyMeta, map[string]string{
-		fieldTargetUrl:  link.TargetURL,
+		fieldTargetURL:  link.TargetURL,
 		fieldCreatedAt:  link.CreatedAt.Format(time.RFC3339),
 		fieldValidUntil: link.ValidUntil.Format(time.RFC3339),
 	})
 	pipe.ExpireAt(ctx, keyMeta, link.ValidUntil)
 	pipe.HExpireAt(ctx, keyIndex, link.ValidUntil, link.ID)
 
-	if _, err := pipe.Exec(ctx); err != nil {
-		return fmt.Errorf("failed to set link: %w", err)
+	if _, execErr := pipe.Exec(ctx); execErr != nil {
+		return fmt.Errorf("failed to set link: %w", execErr)
 	}
 
 	return nil

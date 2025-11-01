@@ -1,13 +1,18 @@
 package links
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 )
 
 type NewLink struct {
 	targetURL string
+}
+
+func NewNewLink(targetURL string) NewLink {
+	return NewLink{
+		targetURL: targetURL,
+	}
 }
 
 func (n NewLink) TargetURL() string {
@@ -20,25 +25,19 @@ const (
 
 func (n NewLink) Validate() error {
 	if n.targetURL == "" {
-		return errors.New("targetUrl is empty")
+		return fmt.Errorf("%w: targetURL is empty", ErrValidationFailed)
 	}
 	if len(n.targetURL) > maxTargetURLLength {
-		return errors.New("targetUrl too long")
+		return fmt.Errorf("%w: targetURL too long", ErrValidationFailed)
 	}
 
-	parsedUrl, err := url.Parse(n.targetURL)
+	parsedURL, err := url.Parse(n.targetURL)
 	if err != nil {
-		return fmt.Errorf("invalid url: %w", err)
+		return fmt.Errorf("%w: %w", ErrValidationFailed, err)
 	}
-	if parsedUrl.Scheme != "https" {
-		return errors.New("scheme must be https")
+	if parsedURL.Scheme != "https" {
+		return fmt.Errorf("%w: scheme must be https", ErrValidationFailed)
 	}
 
 	return nil
-}
-
-func NewNewLink(targetUrl string) NewLink {
-	return NewLink{
-		targetURL: targetUrl,
-	}
 }

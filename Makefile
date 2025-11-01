@@ -1,6 +1,6 @@
 .PHONY: all fmt lint test coverage benchmark deps release clean help
 
-all: fmt lint test benchmark ## Run all tests and checks
+all: fmt lint test coverage benchmark ## Run all tests and checks
 
 fmt: ## Format the code
 	golangci-lint fmt

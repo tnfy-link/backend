@@ -56,7 +56,7 @@ func BenchmarkGeneratorNew(b *testing.B) {
 	g := id.NewGenerator(provider.NewRandomGenerator())
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, _ = g.New(context.Background())
 	}
 }
@@ -76,7 +76,7 @@ func BenchmarkGeneratorValidate(b *testing.B) {
 	validID, _ := g.New(context.Background()) // Generate a valid ID
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_ = g.Validate(validID)
 	}
 }
@@ -86,7 +86,7 @@ func BenchmarkGeneratorValidateInvalid(b *testing.B) {
 	invalidID := "invalid-id"
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_ = g.Validate(invalidID)
 	}
 }
@@ -95,7 +95,7 @@ func BenchmarkGeneratorValidateEmpty(b *testing.B) {
 	g := id.NewGenerator(provider.NewRandomGenerator())
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_ = g.Validate("")
 	}
 }

@@ -2,6 +2,7 @@ package stats
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -22,7 +23,7 @@ type repository struct {
 
 func (r *repository) Get(ctx context.Context, id string) (api.Stats, error) {
 	fields, err := r.redis.HGetAll(ctx, fmt.Sprintf(keyTemplateStats, id)).Result()
-	if err == redis.Nil || len(fields) == 0 {
+	if errors.Is(err, redis.Nil) || len(fields) == 0 {
 		return api.Stats{}, ErrNotFound
 	}
 	if err != nil {
@@ -34,13 +35,14 @@ func (r *repository) Get(ctx context.Context, id string) (api.Stats, error) {
 		Total:  0,
 	}
 
+	const partsCount = 2
 	for k, v := range fields {
 		switch k {
 		case fieldStatsTotal:
 			stats.Total, _ = strconv.Atoi(v)
 		default:
 			parts := strings.Split(k, "|")
-			if len(parts) != 2 {
+			if len(parts) != partsCount {
 				continue
 			}
 

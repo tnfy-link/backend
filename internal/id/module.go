@@ -6,11 +6,13 @@ import (
 	"go.uber.org/fx"
 )
 
-var Module = fx.Module(
-	"id",
-	fx.Provide(NewGenerator),
-	fx.Provide(fx.Annotate(newProvider, fx.As(new(idProvider))), fx.Private),
-)
+func Module() fx.Option {
+	return fx.Module(
+		"id",
+		fx.Provide(NewGenerator),
+		fx.Provide(fx.Annotate(newProvider, fx.As(new(idProvider))), fx.Private),
+	)
+}
 
 func newProvider(config Config, storage *redis.Client) idProvider {
 	switch config.Provider {

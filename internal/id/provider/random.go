@@ -10,6 +10,10 @@ import (
 type RandomProvider struct {
 }
 
+func NewRandomGenerator() *RandomProvider {
+	return &RandomProvider{}
+}
+
 func (g *RandomProvider) New(context.Context) (uint32, error) {
 	var val uint32
 	err := binary.Read(rand.Reader, binary.BigEndian, &val)
@@ -18,8 +22,4 @@ func (g *RandomProvider) New(context.Context) (uint32, error) {
 	}
 
 	return val, nil
-}
-
-func NewRandomGenerator() *RandomProvider {
-	return &RandomProvider{}
 }

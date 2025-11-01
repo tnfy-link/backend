@@ -252,8 +252,7 @@ linters:
         - ^os/exec.Cmd$
         - ^reflect.StructField$
         # public libs
-        - "^github.com/gofiber/contrib/fiberzap/v2.Config$"
-        - "^github.com/gofiber/fiber/v2.Config$"
+        - "^github.com/gofiber/.+Config$"
         - "^gopkg.in/telebot.v4.LongPoller$"
         - "^gopkg.in/telebot.v4.ReplyMarkup$"
         - "^gopkg.in/telebot.v4.Settings$"
