@@ -11,6 +11,7 @@ func Module() fx.Option {
 		fx.Decorate(func(log *zap.Logger) *zap.Logger {
 			return log.Named("links")
 		}),
+		fx.Provide(newMetrics, fx.Private),
 		fx.Provide(newRepository, fx.Private),
 		fx.Provide(NewService),
 	)

@@ -6,6 +6,9 @@
 GET {{baseUrl}} HTTP/1.1
 
 ###
+GET {{baseUrl}}/metrics HTTP/1.1
+
+###
 # @no-redirect
 GET {{baseUrl}}/{{linkId}}?utm_source=source_{{$randomInt 0 9}}&utm_medium=medium_{{$randomInt 0 9}}&utm_campaign=campaign_{{$randomInt 0 9}} HTTP/1.1
 

@@ -16,8 +16,9 @@ func Module() fx.Option {
 		fx.Decorate(func(log *zap.Logger) *zap.Logger {
 			return log.Named("stats")
 		}),
+		fx.Provide(newMetrics, fx.Private),
 		fx.Provide(newRepository, fx.Private),
-		fx.Provide(queue.NewStatsQueue),
+		fx.Provide(queue.NewStatsQueue, fx.Private),
 		fx.Provide(NewService),
 		fx.Invoke(func(lc fx.Lifecycle, s *Service, log *zap.Logger) {
 			wg := sync.WaitGroup{}
