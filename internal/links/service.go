@@ -13,8 +13,9 @@ import (
 type Service struct {
 	idgen *id.Generator
 
-	links  *repository
-	logger *zap.Logger
+	links   *repository
+	metrics *metrics
+	logger  *zap.Logger
 
 	hostname string
 	ttl      time.Duration
@@ -23,6 +24,7 @@ type Service struct {
 func NewService(
 	idgen *id.Generator,
 	links *repository,
+	metrics *metrics,
 	logger *zap.Logger,
 	config Config,
 ) *Service {
@@ -32,6 +34,9 @@ func NewService(
 	if links == nil {
 		panic("links repository is required")
 	}
+	if metrics == nil {
+		panic("metrics is required")
+	}
 	if logger == nil {
 		panic("logger is required")
 	}
@@ -39,8 +44,9 @@ func NewService(
 	return &Service{
 		idgen: idgen,
 
-		links:  links,
-		logger: logger,
+		links:   links,
+		metrics: metrics,
+		logger:  logger,
 
 		hostname: config.Hostname,
 		ttl:      config.TTL,
@@ -49,11 +55,13 @@ func NewService(
 
 func (s *Service) Create(ctx context.Context, target NewLink) (api.Link, error) {
 	if err := target.Validate(); err != nil {
+		s.metrics.IncError(metricsErrorReasonValidationFailed)
 		return api.Link{}, newValidationError("link", err)
 	}
 
 	id, err := s.idgen.New(ctx)
 	if err != nil {
+		s.metrics.IncError(metricsErrorReasonIDGenerationFailed)
 		return api.Link{}, fmt.Errorf("failed to generate id: %w", err)
 	}
 
@@ -65,7 +73,15 @@ func (s *Service) Create(ctx context.Context, target NewLink) (api.Link, error) 
 		ValidUntil: time.Now().Add(s.ttl),
 	}
 
-	return link, s.links.Create(ctx, link)
+	err = s.links.Create(ctx, link)
+	if err != nil {
+		s.metrics.IncError(metricsErrorReasonStorageFailed)
+		return api.Link{}, err
+	}
+
+	s.metrics.IncCreated()
+
+	return link, nil
 }
 
 func (s *Service) Get(ctx context.Context, id string) (api.Link, error) {

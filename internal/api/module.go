@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/swagger"
@@ -29,6 +30,11 @@ func Module() fx.Option {
 		}),
 		fx.Provide(NewLinks),
 		fx.Invoke(func(app *fiber.App, l *Links, config Config) {
+			metrics := fiberprometheus.NewWithDefaultRegistry("")
+
+			metrics.RegisterAt(app, "/metrics")
+			app.Use(metrics.Middleware)
+
 			api := app.Group("/api/v1")
 
 			apidoc.SwaggerInfo.Version = version.AppVersion

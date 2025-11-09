@@ -19,10 +19,17 @@ type Service struct {
 
 	queue *queue.StatsQueue
 
-	log *zap.Logger
+	metrics *metrics
+	log     *zap.Logger
 }
 
-func NewService(stats *repository, links *links.Service, queue *queue.StatsQueue, log *zap.Logger) *Service {
+func NewService(
+	stats *repository,
+	links *links.Service,
+	queue *queue.StatsQueue,
+	metrics *metrics,
+	log *zap.Logger,
+) *Service {
 	if stats == nil {
 		panic("stats repository is required")
 	}
@@ -31,6 +38,9 @@ func NewService(stats *repository, links *links.Service, queue *queue.StatsQueue
 	}
 	if queue == nil {
 		panic("queue is required")
+	}
+	if metrics == nil {
+		panic("metrics is required")
 	}
 	if log == nil {
 		panic("logger is required")
@@ -43,7 +53,8 @@ func NewService(stats *repository, links *links.Service, queue *queue.StatsQueue
 
 		queue: queue,
 
-		log: log,
+		metrics: metrics,
+		log:     log,
 	}
 }
 
@@ -85,6 +96,8 @@ func (s *Service) processEvent(event queue.StatsIncrEvent) error {
 	if err != nil {
 		return fmt.Errorf("failed to get link: %w", err)
 	}
+
+	s.metrics.IncRedirects()
 
 	return s.stats.Incr(subCtx, link, event.Labels)
 }
