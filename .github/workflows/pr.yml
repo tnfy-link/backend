@@ -57,6 +57,7 @@ jobs:
           args: release --snapshot
 
       - name: Upload to S3
+        if: github.actor != 'dependabot[bot]'
         uses: capcom6/upload-s3-action@master
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -94,6 +95,7 @@ jobs:
           body-includes: Pull request artifacts
 
       - name: Create or update comment
+        if: github.actor != 'dependabot[bot]'
         uses: peter-evans/create-or-update-comment@v4
         env:
           DOCKER_REGISTRY: ${{ vars.DOCKER_REGISTRY }}
@@ -107,13 +109,13 @@ jobs:
             | Platform         | File                                                                                                                                                                                     |
             | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
             | 🐳 Docker         | [GitHub Container Registry](https://${{ env.DOCKER_REGISTRY }}/${{ env.PROJECT_NAME }}:pr-${{ github.event.pull_request.number }})                                                       |
-            | 🍎 Darwin arm64   | [${{ env.PROJECT_NAME }}_Darwin_arm64.tar.gz](https://github.capcom.me/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Darwin_arm64.tar.gz)   |
-            | 🍎 Darwin x86_64  | [${{ env.PROJECT_NAME }}_Darwin_x86_64.tar.gz](https://github.capcom.me/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Darwin_x86_64.tar.gz) |
-            | 🐧 Linux arm64    | [${{ env.PROJECT_NAME }}_Linux_arm64.tar.gz](https://github.capcom.me/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Linux_arm64.tar.gz)     |
-            | 🐧 Linux i386     | [${{ env.PROJECT_NAME }}_Linux_i386.tar.gz](https://github.capcom.me/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Linux_i386.tar.gz)       |
-            | 🐧 Linux x86_64   | [${{ env.PROJECT_NAME }}_Linux_x86_64.tar.gz](https://github.capcom.me/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Linux_x86_64.tar.gz)   |
-            | 🪟 Windows arm64  | [${{ env.PROJECT_NAME }}_Windows_arm64.zip](https://github.capcom.me/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Windows_arm64.zip)       |
-            | 🪟 Windows i386   | [${{ env.PROJECT_NAME }}_Windows_i386.zip](https://github.capcom.me/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Windows_i386.zip)         |
-            | 🪟 Windows x86_64 | [${{ env.PROJECT_NAME }}_Windows_x86_64.zip](https://github.capcom.me/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Windows_x86_64.zip)     |
+            | 🍎 Darwin arm64   | [${{ env.PROJECT_NAME }}_Darwin_arm64.tar.gz](https://${{ secrets.AWS_BUCKET }}/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Darwin_arm64.tar.gz)   |
+            | 🍎 Darwin x86_64  | [${{ env.PROJECT_NAME }}_Darwin_x86_64.tar.gz](https://${{ secrets.AWS_BUCKET }}/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Darwin_x86_64.tar.gz) |
+            | 🐧 Linux arm64    | [${{ env.PROJECT_NAME }}_Linux_arm64.tar.gz](https://${{ secrets.AWS_BUCKET }}/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Linux_arm64.tar.gz)     |
+            | 🐧 Linux i386     | [${{ env.PROJECT_NAME }}_Linux_i386.tar.gz](https://${{ secrets.AWS_BUCKET }}/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Linux_i386.tar.gz)       |
+            | 🐧 Linux x86_64   | [${{ env.PROJECT_NAME }}_Linux_x86_64.tar.gz](https://${{ secrets.AWS_BUCKET }}/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Linux_x86_64.tar.gz)   |
+            | 🪟 Windows arm64  | [${{ env.PROJECT_NAME }}_Windows_arm64.zip](https://${{ secrets.AWS_BUCKET }}/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Windows_arm64.zip)       |
+            | 🪟 Windows i386   | [${{ env.PROJECT_NAME }}_Windows_i386.zip](https://${{ secrets.AWS_BUCKET }}/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Windows_i386.zip)         |
+            | 🪟 Windows x86_64 | [${{ env.PROJECT_NAME }}_Windows_x86_64.zip](https://${{ secrets.AWS_BUCKET }}/${{ github.repository }}/${{ github.event.pull_request.head.sha }}/${{ env.PROJECT_NAME }}_Windows_x86_64.zip)     |
 
           edit-mode: replace

@@ -40,7 +40,7 @@ The backend of a high-performance URL shortener service built with Go, using mod
 
 ## 🛠 Tech Stack
 
-- **Language**: Go 1.23+
+- **Language**: Go 1.24+
 - **Web Framework**: [Fiber v2](https://github.com/gofiber/fiber)
 - **Storage**: Redis
 - **Logging**: Uber Zap
@@ -65,7 +65,7 @@ The backend of a high-performance URL shortener service built with Go, using mod
 ### Manual Setup
 
 1. Prerequisites:
-   - Go 1.23 or later
+   - Go 1.24 or later
    - Redis server
 
 2. Install dependencies:
