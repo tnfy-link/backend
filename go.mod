@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.14.0
 	github.com/go-playground/validator/v10 v10.23.0
-	github.com/gofiber/fiber/v2 v2.52.9
+	github.com/gofiber/fiber/v2 v2.52.11
 	github.com/gofiber/swagger v1.1.1
 	github.com/itchyny/base58-go v0.2.2
 	github.com/prometheus/client_golang v1.23.2
