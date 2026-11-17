@@ -25,17 +25,14 @@ func Module() fx.Option {
 			ctx, cancel := context.WithCancel(context.Background())
 			lc.Append(fx.Hook{
 				OnStart: func(_ context.Context) error {
-					wg.Add(1)
-					go func() {
-						defer wg.Done()
-
+					wg.Go(func() {
 						log.Info("stats processing started")
 						err := s.Process(ctx)
 						if err != nil && !errors.Is(err, context.Canceled) {
 							log.Error("failed to process stats", zap.Error(err))
 						}
 						log.Info("stats processing stopped")
-					}()
+					})
 					return nil
 				},
 				OnStop: func(_ context.Context) error {

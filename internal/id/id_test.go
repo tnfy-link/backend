@@ -9,6 +9,8 @@ import (
 )
 
 func TestGeneratorValidate(t *testing.T) {
+	t.Parallel()
+
 	g := id.NewGenerator(provider.NewRandomGenerator())
 
 	tests := []struct {
@@ -45,6 +47,8 @@ func TestGeneratorValidate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			if err := g.Validate(tt.id); (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
