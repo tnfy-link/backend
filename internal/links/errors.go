@@ -31,13 +31,12 @@ func newValidationError(field string, err error) ValidationError {
 }
 
 func AsValidationError(err error) *ValidationError {
-	var v ValidationError
-
-	if errors.As(err, &v) {
-		return &v
+	v, ok := errors.AsType[ValidationError](err)
+	if !ok {
+		return nil
 	}
 
-	return nil
+	return &v
 }
 
 var _ error = (*ValidationError)(nil)
