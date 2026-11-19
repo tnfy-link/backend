@@ -1,0 +1,95 @@
+{
+    "title": "Link Shortening Service Dashboard",
+    "panels": [
+        {
+            "title": "Total Links Created",
+            "type": "stat",
+            "id": 1,
+            "gridPos": {
+                "x": 0,
+                "y": 0,
+                "w": 12,
+                "h": 4
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(links_created_total[5m]))",
+                    "legendFormat": "created",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "title": "Link Errors by Reason",
+            "type": "graph",
+            "id": 2,
+            "gridPos": {
+                "x": 12,
+                "y": 0,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(links_errors_total[5m])) by (reason)",
+                    "legendFormat": "{{reason}}",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "title": "HTTP Request Duration (p99)",
+            "type": "graph",
+            "id": 3,
+            "gridPos": {
+                "x": 0,
+                "y": 8,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+                    "legendFormat": "99th percentile",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "title": "Total HTTP Requests",
+            "type": "graph",
+            "id": 4,
+            "gridPos": {
+                "x": 12,
+                "y": 8,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(http_requests_total[5m])) by (status_code)",
+                    "legendFormat": "{{status_code}}",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "title": "Total Link Redirects",
+            "type": "stat",
+            "id": 5,
+            "gridPos": {
+                "x": 0,
+                "y": 16,
+                "w": 24,
+                "h": 4
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(stats_redirects_total[5m]))",
+                    "legendFormat": "redirects",
+                    "refId": "A"
+                }
+            ]
+        }
+    ]
+}
