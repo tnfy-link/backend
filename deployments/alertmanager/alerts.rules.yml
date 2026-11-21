@@ -2,7 +2,7 @@ groups:
   - name: backend-alerts
     rules:
       - alert: BackendHighLinkCreationErrorRate
-        expr: rate(links_errors_total[5m]) > 0.05
+        expr: sum(rate(links_errors_total[5m])) / (sum(rate(links_errors_total[5m])) + rate(links_created_total[5m])) > 0.05
         for: 5m
         labels:
           severity: critical

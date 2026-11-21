@@ -2,8 +2,14 @@
     "title": "Link Shortening Service Dashboard",
     "panels": [
         {
-            "title": "Total Links Created",
+            "title": "Links Created Rate",
             "type": "stat",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "reqps"
+                },
+                "overrides": []
+            },
             "id": 1,
             "gridPos": {
                 "x": 0,
@@ -56,8 +62,14 @@
             ]
         },
         {
-            "title": "Total HTTP Requests",
+            "title": "HTTP Requests Rate",
             "type": "graph",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "reqps"
+                },
+                "overrides": []
+            },
             "id": 4,
             "gridPos": {
                 "x": 12,
@@ -74,8 +86,14 @@
             ]
         },
         {
-            "title": "Total Link Redirects",
+            "title": "Link Redirects Rate",
             "type": "stat",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "reqps"
+                },
+                "overrides": []
+            },
             "id": 5,
             "gridPos": {
                 "x": 0,
