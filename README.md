@@ -19,6 +19,7 @@
     - [Using the Pre-built Docker Image](#using-the-pre-built-docker-image)
     - [Using a Pre-built Binary](#using-a-pre-built-binary)
     - [Building from Source](#building-from-source)
+    - [Redirect Service](#redirect-service)
   - [Usage](#usage)
     - [API Documentation](#api-documentation)
       - [Shorten URL](#shorten-url)
@@ -33,7 +34,7 @@
 
 ## About The Project
 
-tnfy.link is a URL shortener service. This repository holds its Go backend, which creates short links, resolves them, and records redirect statistics including UTM labels. It exposes a versioned JSON API and Prometheus metrics.
+tnfy.link is a URL shortener service. This repository holds its Go backend, which creates short links and records redirect statistics including UTM labels. It exposes a versioned JSON API and Prometheus metrics.
 
 The service is intended for operators running their own link shortening service and for client applications consuming the API. It is configured entirely through environment variables and ships with a Docker Compose setup for local use.
 
@@ -69,6 +70,7 @@ The service is intended for operators running their own link shortening service 
 - Docker and Docker Compose (pre-built image only)
 - Redis server (pre-built binary or source build)
 - Go 1.26 or later (source build only)
+- `golangci-lint` (source build only; required by `make all`)
 
 ### Using the Pre-built Docker Image
 
@@ -101,7 +103,7 @@ A Redis server must be reachable at the configured `STORAGE__URL` (default `redi
 
 ### Building from Source
 
-Requires Go 1.26 or later and a reachable Redis server:
+Requires Go 1.26 or later, a reachable Redis server, and `golangci-lint` for `make all`:
 
 ```bash
 git clone https://github.com/tnfy-link/backend.git
@@ -113,6 +115,12 @@ go run main.go
 ```
 
 To build a container image locally instead, run `docker compose up --build -d` from the cloned repository.
+
+### Redirect Service
+
+Generated links have the form `LINKS__HOSTNAME/<id>`. This backend does not serve `GET /<id>`; a separate service must handle that path and redirect to the target URL. Set `LINKS__HOSTNAME` to that service's public base URL, otherwise the links returned by the API will not open.
+
+The Docker examples above expose the backend on port `3000` and do not include the redirect service. Set `LINKS__HOSTNAME` to the redirect service's public URL when deploying it.
 
 ## Usage
 
@@ -198,7 +206,7 @@ Prometheus metrics are served at `GET /metrics`. Exposed application metrics inc
 Ready-to-use monitoring assets are included:
 
 - `deployments/grafana/dashboard.json` — Grafana dashboard
-- `deployments/alertmanager/alerts.rules.yml` — Alertmanager rules for error rate, latency, request rate, and redirect rate
+- `deployments/alertmanager/alerts.rules.yml` — Prometheus alerting rules for error rate, latency, request rate, and redirect rate; add it to Prometheus `rule_files`. Alertmanager must be configured separately to receive and route the alerts.
 
 ## Configuration
 
@@ -216,6 +224,8 @@ Configuration is read from environment variables, or from a `.env` file in the w
 | `ID__PROVIDER`            | ID provider (`random` or `combined`)                        | `random`                   |
 | `DEBUG`                   | Enables development logging when set to any non-empty value | *unset*                    |
 
+`DEBUG` must be set in the process environment before startup; setting it only in `.env` does not enable development logging. `LINKS__HOSTNAME` must point to the redirect service described in [Redirect Service](#redirect-service); the Docker examples use a different port, so set it explicitly for those deployments.
+
 ## Contributing
 
 1. Fork the repository
@@ -224,7 +234,7 @@ Configuration is read from environment variables, or from a `.env` file in the w
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-Run `make all` to format, lint, test, and benchmark the project before submitting.
+Run `make all` to format, lint, test, and benchmark the project before submitting; this requires `golangci-lint` to be installed.
 
 ## License
 
